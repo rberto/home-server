@@ -1,7 +1,7 @@
 from datetime import datetime
 import time
 from BMP085 import Bmp085
-
+import daemon
 
 class Templog(object):
     def __init__(self, file_path):
@@ -20,7 +20,8 @@ class Templog(object):
 
 
 try:
-    tmplogger = Templog("/home/pi/templog.log")
-    tmplogger.log()
+    with daemon.DaemonContext():
+        tmplogger = Templog("/home/pi/logs/temp.log")
+        tmplogger.log()
 except:
     raise
