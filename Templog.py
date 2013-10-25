@@ -2,6 +2,7 @@ from datetime import datetime
 import time
 from BMP085 import Bmp085
 import daemon
+from pidfile import PidFile
 
 class Templog(object):
     def __init__(self, file_path):
@@ -32,7 +33,9 @@ class Templog(object):
 
 
 try:
-    with daemon.DaemonContext():
+    context = daemon.DaemonContext(
+        pidfile=PidFile('/var/run/templog.pid'))
+    with context:
         tmplogger = Templog("/home/pi/logs/temp.log")
         tmplogger.log()
 except:
