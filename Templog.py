@@ -9,13 +9,25 @@ class Templog(object):
         self.bmp085 = Bmp085(0x77, 0)
 
     def log(self):
+        startdate = time.time()
+        count = 0
+        totaltemp = 0
         while (True):
-            with open(self.file_path, 'a') as f:
-                temp = str(self.bmp085.readTemp())
-                date = datetime.now()
-                line = date.__str__() + " , " + temp + "\n"
-                print line
-                f.write(line)
+            temp = self.bmp085.readTemp()
+            totaltemp += temp
+            count += 1
+            # less than 30 min as passed since last startdate definition.
+            if time.time() - startdate > 600:
+                averagetemp = totaltemp / count
+                with open(self.file_path, 'a') as f:
+                    date = datetime.now()
+                    t = time.time()
+                    line = date.__str__() + "," + str(t) + "," + str(averagetemp)  + "\n"
+                    print line
+                    f.write(line)
+                startdate = time.time()
+                count = 0
+                totaltemp = 0
             time.sleep(30)
 
 
