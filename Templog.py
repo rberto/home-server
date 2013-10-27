@@ -8,28 +8,36 @@ class Templog(object):
     def __init__(self, file_path):
         self.file_path = file_path
         self.bmp085 = Bmp085(0x77, 0)
+        self.temps = []
+        self.pressures = []
 
     def log(self):
         startdate = time.time()
-        count = 0
-        totaltemp = 0
         while (True):
-            temp = self.bmp085.readTemp()
-            totaltemp += temp
-            count += 1
-            # less than 30 min as passed since last startdate definition.
+            (temp, p) = self.bmp085.readTempPressure()
+            self.temps.append(temp)
+            self.pressures.append(p)
             if time.time() - startdate > 600:
-                averagetemp = totaltemp / count
-                with open(self.file_path, 'a') as f:
-                    date = datetime.now()
-                    t = time.time()
-                    line = date.__str__() + "," + str(t) + "," + str(averagetemp)  + "\n"
-                    print line
-                    f.write(line)
+                # averaging temp and pressure every 10 mins.
+                averagetemp = self.__getaverage(self.temps)
+                averagepressure = self.__getaverage(self.pressures)
+                # Logging these values to the log file.
+                self.__logtofile([averagetemp, averagepressure])
+                # Reinitializing the start date and temperature and pressure values.
                 startdate = time.time()
-                count = 0
-                totaltemp = 0
+                self.temps = []
+                self.pressures = []
             time.sleep(30)
+
+    def __getaverage(self, li):
+        return sum(li) / len(li)
+
+    def __logtofile(self, li):
+        with open(self.file_path, 'a') as f:
+            values = [datetime.now(), time.time()]
+            values.extend(li)
+            line = ",".join(["%s" % x for x in values]) + "\n"
+            f.write(line)
 
 
 try:
