@@ -25,6 +25,7 @@ start)
 	cd $DAEMON_PATH
 	PID=`python $DAEMON $DAEMONOPTS > /dev/null 2>&1 & echo $!`
 	#echo "Saving PID" $PID " to " $PIDFILE
+	sleep 1
         if [ -f $PIDFILE ]; then
             printf "%s\n" "Ok"
         else
