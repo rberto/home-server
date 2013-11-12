@@ -3,6 +3,13 @@ import time
 from BMP085 import Bmp085
 import daemon
 from pidfile import PidFile
+import logging
+import logging.config
+import os
+import json
+
+# I2C address of the BMP085 sensor.
+SENSOR_ADDRESS = 0x77
 
 class Templog(object):
 # TODO: add debug logging capabilities. Maybe create my
@@ -10,11 +17,16 @@ class Templog(object):
 # wakeshutdown deamon.
     def __init__(self, file_path):
         """ initialise the temperature logging class"""
+        self.logger = logging.getLogger(__name__)
+        self.setup_logger('/opt/Temp/logging_config.json',
+                          logging.DEBUG,
+                          "LOG_CFG")
         # Store the path to the file where the data
         # will be stored.
         self.file_path = file_path
         # Initialize the I2C temperature and pressure sensor.
-        self.bmp085 = Bmp085(0x77, 0)
+        self.logger.info("Initialize sensor on I2C address: %s" % SENSOR_ADDRESS)
+        self.bmp085 = Bmp085(SENSOR_ADDRESS, 0)
         # Initialize both temperature and pressure list
         # used to store all data before averaging.
         self.temps = []
@@ -22,6 +34,7 @@ class Templog(object):
 
     def log(self):
         """Function that mesures and loggs temp and pressure data."""
+        self.logger.info("Starting data logging of temperature and pressure.")
         # storing the date of launch of the capture.
         startdate = time.time()
         while (True):
@@ -46,6 +59,7 @@ class Templog(object):
 
     def __getaverage(self, li):
         """ returns the average of values contained in the list passed in parameters"""
+        self.logger.debug("Averaging a list of %s elements." % len(li))
         return sum(li) / len(li)
 
     def __logtofile(self, li):
@@ -53,6 +67,7 @@ class Templog(object):
         on the same line, each term separated by a coma. before the data it also
         print an str rep of the date and time and the time.time() also separated
         by coma."""
+        self.logger.debug("Entering the logtofile function.")
         # Open the file in amend mode: writes at the end of the file.
         with open(self.file_path, 'a') as f:
             # Gets both representation of the date and time.
@@ -64,6 +79,21 @@ class Templog(object):
             line = ",".join(["%s" % x for x in values]) + "\n"
             # Write this line to the file.
             f.write(line)
+
+    def setup_logger(self, path, lvl, env_key):
+        """
+        Setup logging configuration
+        """
+        value = os.getenv(env_key, None)
+        if value:
+            path = value
+        if os.path.exists(path):
+            with open(path, 'rt') as f:
+                config = json.load(f)
+            logging.config.dictConfig(config)
+        else:
+            logging.basicConfig(level=lvl)
+
 
 # TODO: add no deamon start option.
 if __name__ == '__main__':
@@ -77,4 +107,6 @@ if __name__ == '__main__':
             tmplogger = Templog("/home/pi/logs/temp.log")
             tmplogger.log()
     except:
+        logging.error('Catched exeption', exc_info=True)
         raise
+
