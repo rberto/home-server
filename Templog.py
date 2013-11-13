@@ -7,6 +7,7 @@ import logging
 import logging.config
 import os
 import json
+import sqlite3
 
 # I2C address of the BMP085 sensor.
 SENSOR_ADDRESS = 0x77
@@ -35,6 +36,7 @@ class Templog(object):
     def log(self):
         """Function that mesures and loggs temp and pressure data."""
         self.logger.info("Starting data logging of temperature and pressure.")
+        self.__setupdb()
         # storing the date of launch of the capture.
         startdate = time.time()
         while (True):
@@ -49,7 +51,7 @@ class Templog(object):
                 averagepressure = self.__getaverage(self.pressures)
                 # Logging these values to the log file.
                 self.__logtofile([averagetemp, averagepressure])
-                # TODO: add logging to BDD.
+                self.__logtodb([averagetemp, averagepressure])
                 # Reinitializing the start date and temperature and pressure values.
                 startdate = time.time()
                 self.temps = []
@@ -79,6 +81,31 @@ class Templog(object):
             line = ",".join(["%s" % x for x in values]) + "\n"
             # Write this line to the file.
             f.write(line)
+
+    def __setupdb(self):
+        self.logger.info("Setting up the DB")
+        dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
+        cursor = dbconnection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS data (key text primary key, year text, month text, day text, hour text, minute text, seconds text, temp text, pressure text)")
+        dbconnection.commit()
+        cursor.close()
+        dbconnection.close()
+
+    def __logtodb(self, li):
+        """
+        """
+        key = time.time()
+        now = datetime.now()
+        values = [key, now.year, now.month, now.day, now.hour, now.minute, now.second]
+        values.extend(li)
+        # Convert list to list of str.
+        values = ["%s" % x for x in values]
+        dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
+        cursor = dbconnection.cursor()
+        cursor.execute("INSERT INTO data VALUES (?,?,?,?,?,?,?,?,?)", values)
+        dbconnection.commit()
+        cursor.close()
+        dbconnection.close()
 
     def setup_logger(self, path, lvl, env_key):
         """
