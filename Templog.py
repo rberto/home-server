@@ -8,6 +8,7 @@ import logging.config
 import os
 import json
 import sqlite3
+from web_interface import WebInterface
 
 # I2C address of the BMP085 sensor.
 SENSOR_ADDRESS = 0x77
@@ -130,9 +131,13 @@ if __name__ == '__main__':
         context = daemon.DaemonContext(
             pidfile=PidFile('/var/run/templog.pid'))
         with context:
+            # start the web interface.
+            web = WebInterface()
+            web.start()
             # initialize the data logger and launch the logging.
             tmplogger = Templog("/home/pi/logs/temp.log")
             tmplogger.log()
+            
     except:
         logging.error('Catched exeption', exc_info=True)
         raise
