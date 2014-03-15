@@ -9,6 +9,7 @@ import os
 import json
 import sqlite3
 from web_interface import WebInterface
+import subprocess
 
 # I2C address of the BMP085 sensor.
 SENSOR_ADDRESS = 0x77
@@ -38,6 +39,9 @@ class Templog(object):
         """Function that mesures and loggs temp and pressure data."""
         self.logger.info("Starting data logging of temperature and pressure.")
         self.__setupdb()
+        # start the web interface.
+        p = subprocess.Popen(['python', '/opt/Temp/web_interface.py'])
+        self.logger.info("Web interface loaded.")
         # storing the date of launch of the capture.
         startdate = time.time()
         while (True):
@@ -131,9 +135,6 @@ if __name__ == '__main__':
         context = daemon.DaemonContext(
             pidfile=PidFile('/var/run/templog.pid'))
         with context:
-            # start the web interface.
-            web = WebInterface()
-            web.start()
             # initialize the data logger and launch the logging.
             tmplogger = Templog("/home/pi/logs/temp.log")
             tmplogger.log()
