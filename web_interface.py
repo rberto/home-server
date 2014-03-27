@@ -8,22 +8,34 @@ WEB_INTERFACE_PORT = 8889
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        data = [["Time", "Temperature"]]
         now = datetime.now()
         today = [now.year, now.month, now.day]
+        self.render_graph(today)
+
+    def post(self):
+        date = self.get_argument("selectedday", None)
+        date = str(date).split("-")
+        date = [int(x) for x in date ]
+        self.render_graph(date)
+
+    def render_graph(self, date):
+        data = [["Time", "Temperature"]]
         dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
         cursor = dbconnection.cursor()
         i = 1
-        for row in cursor.execute('SELECT * FROM data WHERE year = ? AND month = ? AND day = ?', today):
+        summ = 0
+        for row in cursor.execute('SELECT hour, minute, seconds, temp FROM data WHERE year = ? AND month = ? AND day = ?', date):
             data.append([])
-            data[i].append("%s:%s:%s" % (str(row[4]), str(row[5]), str(row[6])))
-            data[i].append(float(row[7]))
+            data[i].append("%s:%s:%s" % (str(row[0]), str(row[1]), str(row[2])))
+            data[i].append(float(row[3]))
+            summ = summ + float(row[3])
             i = i+1
         if len(data) > 1:
-            self.render('index.html', graph_list = str(data))
+            average = summ / len(data)
+            self.render('index.html', graph_list = str(data), tmp_average = average)
         else:
             data.append(['No data', 0])
-            self.render('index.html', graph_list = str(data))
+            self.render('index.html', graph_list = str(data), tmp_average = 0)
 
 class ApiHandler(tornado.web.RequestHandler):
     def get(self):

@@ -1,6 +1,5 @@
-
 <html>
-<head>
+  <head>
     <title>Raspberry Pi Temperature Logger</title>
 
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -8,7 +7,7 @@
       google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
-        var data = google.visualization.arrayToDataTable( {{graph_list}});
+        var data = google.visualization.arrayToDataTable( {{graph_list}} );
         var options = {
           title: 'Temperature'
         };
@@ -17,20 +16,24 @@
         chart.draw(data, options);
       }
     </script>
-</head>
-<body>
-<h1>Raspberry Pi Temperature Logger</h1>
-<hr>
-<h2>Temperature Chart</h2>
-<div id="chart_div" style="width: 900px; height: 500px;"></div>
-<hr>
-<h2>Minumum temperature&nbsp</h2>
-2013-09-19 06:45:02&nbsp&nbsp&nbsp19.437C
-<h2>Maximum temperature</h2>
-2013-09-19 15:00:02&nbsp&nbsp&nbsp22.75C
-<h2>Average temperature</h2>
-20.977C
-<hr>
-</body>
+  </head>
+  <body>
+    <h1>Raspberry Pi Temperature Logger</h1>
+    <hr>
+    <h2>Temperature Chart</h2>
+    <form method="POST">
+      Day to display: <input type="date" name="selectedday">
+      <input type="submit">
+    </form>
+    <div id="chart_div" style="width: 900px; height: 250px;"></div>
+    <hr>
+    <h2>Minumum temperature&nbsp</h2>
+    2013-09-19 06:45:02&nbsp&nbsp&nbsp19.437C
+    <h2>Maximum temperature</h2>
+    2013-09-19 15:00:02&nbsp&nbsp&nbsp22.75C
+    <h2>Average temperature</h2>
+    {{ tmp_average }}
+    <hr>
+  </body>
 </html>
 
