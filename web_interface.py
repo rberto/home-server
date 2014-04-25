@@ -3,39 +3,40 @@ import tornado.ioloop
 import tornado.web
 import sqlite3
 from datetime import datetime
+from dbaccess import DBAccess
 
 WEB_INTERFACE_PORT = 8889
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         now = datetime.now()
-        today = [now.year, now.month, now.day]
-        self.render_graph(today)
+        self.render_graph(now)
 
     def post(self):
-        date = self.get_argument("selectedday", None)
-        date = str(date).split("-")
-        date = [int(x) for x in date ]
+        s_date = self.get_argument("selectedday", None)
+        s_date = str(s_date).split("-")
+        l_date = [int(x) for x in s_date ]
+        date = datetime(l_date[0], l_date[1], l_date[2])
         self.render_graph(date)
 
     def render_graph(self, date):
-        data = [["Time", "Temperature"]]
-        dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
-        cursor = dbconnection.cursor()
-        i = 1
-        summ = 0
-        for row in cursor.execute('SELECT hour, minute, seconds, temp FROM data WHERE year = ? AND month = ? AND day = ?', date):
-            data.append([])
-            data[i].append("%s:%s:%s" % (str(row[0]), str(row[1]), str(row[2])))
-            data[i].append(float(row[3]))
-            summ = summ + float(row[3])
-            i = i+1
-        if len(data) > 1:
-            average = summ / len(data)
-            self.render('index.html', graph_list = str(data), tmp_average = average)
+        db = DBAccess()
+        (average, raw_data) = db.get_data_for_day(date)
+        last_temp = db.get_last_temp()
+        last_pressure = db.get_last_pressure()
+        if average is not None:
+            self.render('index.html',
+                        graph_list = str(raw_data),
+                        tmp_average = average,
+                        current_temp = last_temp,
+                        current_pressure = last_pressure)
         else:
             data.append(['No data', 0])
-            self.render('index.html', graph_list = str(data), tmp_average = 0)
+            self.render('index.html',
+                        graph_list = str(raw_data),
+                        tmp_average = 0,
+                        current_temp = 0,
+                        current_pressure = 0)
 
 class ApiHandler(tornado.web.RequestHandler):
     def get(self):
