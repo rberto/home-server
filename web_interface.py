@@ -44,13 +44,9 @@ class MainHandler(tornado.web.RequestHandler):
 class ApiHandler(tornado.web.RequestHandler):
     def get(self):
         data = dict()
-        dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
-        cursor = dbconnection.cursor()
-        for row in cursor.execute('SELECT * FROM data WHERE year = 2014 AND month = 01 AND day = 02'):
-            data[row[0]] = row[7]
-        dbconnection.commit()
-        cursor.close()
-        dbconnection.close()
+        db = DBAccess()
+        data["temp"]= db.get_last_temp()
+        data["pressure"] = db.get_last_pressure()
         self.write(data)
 
 class WebInterface():
