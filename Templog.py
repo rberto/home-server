@@ -10,6 +10,8 @@ import json
 import sqlite3
 from web_interface import WebInterface
 import subprocess
+import signal
+import sys
 
 # I2C address of the BMP085 sensor.
 SENSOR_ADDRESS = 0x77
@@ -34,13 +36,22 @@ class Templog(object):
         # used to store all data before averaging.
         self.temps = []
         self.pressures = []
+        self.web_process = None
+        
+    def signal_handler(self, signal, frame):
+        self.logger.info("Killing webinterface.")
+        self.web_process.kill()
+        self.logger.info("Exiting the logger")
+        sys.exit(0)
 
     def log(self):
         """Function that mesures and loggs temp and pressure data."""
+        self.logger.info("Registering signal handler for gracefull exit.")
+        signal.signal(signal.SIGHUP, self.signal_handler)
         self.logger.info("Starting data logging of temperature and pressure.")
         self.__setupdb()
         # start the web interface.
-        p = subprocess.Popen(['python', '/opt/Temp/web_interface.py'])
+        self.web_process = subprocess.Popen(['python', '/opt/Temp/web_interface.py'])
         self.logger.info("Web interface loaded.")
         # storing the date of launch of the capture.
         startdate = time.time()
