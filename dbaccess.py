@@ -37,19 +37,30 @@ class DBAccess():
 
 
     def get_data_for_day(self, date):
-        data = [["Time", "Temperature"]]
+        temp_data = [["Time", "Temperature"]]
+        pressure_data = [["Time", "Pressure"]]
         cursor = self.__connect().cursor()
         i = 1
         summ = 0
-        for row in cursor.execute('SELECT hour, minute, temp FROM data WHERE year = ? AND month = ? AND day = ?', [date.year, date.month, date.day]):
-            data.append([])
-            data[i].append("%s:%s" % (str(row[0]), str(row[1])))
-            data[i].append(float(row[2]))
+        for row in cursor.execute('SELECT hour, minute, temp, pressure FROM data WHERE year = ? AND month = ? AND day = ?', [date.year, date.month, date.day]):
+            # Adding an other empty item (time, value) to the data list.
+            temp_data.append([])
+            pressure_data.append([])
+            # Populating the new item with date for both temp and pressure data list.
+            temp_data[i].append("%s:%s" % (str(row[0]), str(row[1])))
+            pressure_data[i].append("%s:%s" % (str(row[0]), str(row[1])))
+            # Populating the new item with the value of the relevant info for each of
+            # the temp and pressure data list.
+            temp_data[i].append(float(row[2]))
+            pressure_data[i].append(float(row[3]))
+            # Adding together all the temps
             summ = summ + float(row[2])
             i = i + 1
         self.__disconnect()
-        if len(data) > 1 :
-            average = summ / (len(data)-1)
-            return (average, data)
+        if len(temp_data) > 1 :
+            # Averaging the temp. (-1 id for taking count of the title at the beginning of the list.)
+            average = summ / (len(temp_data)-1)
+            return (average, temp_data, pressure_data)
         else:
-            return (None, None)
+            # If theres no data for the Day return None.
+            return (None, None, None)

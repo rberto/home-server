@@ -7,15 +7,22 @@
       google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
-        var data = google.visualization.arrayToDataTable( {{graph_list}} );
-        var options = {
+        var data_temp = google.visualization.arrayToDataTable( {{temp_graph_list}} );
+        var temp_options = {
           title: 'Temperature'
         };
+        var data_pressure = google.visualization.arrayToDataTable( {{pressure_graph_list}} );
+        var pressure_options = {
+          title: 'Pressure'
+        };
 
-        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-        chart.draw(data, options);
+        var temp_chart = new google.visualization.LineChart(document.getElementById('chart_div_pressure'));
+        temp_chart.draw(data_temp, temp_options);
+        var pressure_chart = new google.visualization.LineChart(document.getElementById('chart_div_temp'));
+        pressure_chart.draw(data_pressure, pressure_options);
       }
     </script>
+
   </head>
   <body>
     <h1>Raspberry Pi Temperature Logger</h1>
@@ -26,14 +33,15 @@
       Day to display: <input type="date" name="selectedday">
       <input type="submit">
     </form>
-    <div id="chart_div" style="width: 900px; height: 250px;"></div>
+    <div id="chart_div_temp" style="width: 900px; height: 250px;"></div>
+    <div id="chart_div_pressure" style="width: 900px; height: 250px;"></div>
     <hr>
     <h2>Minumum temperature&nbsp</h2>
     2013-09-19 06:45:02&nbsp&nbsp&nbsp19.437C
     <h2>Maximum temperature</h2>
     2013-09-19 15:00:02&nbsp&nbsp&nbsp22.75C
     <h2>Average temperature</h2>
-    {{ tmp_average }}
+    {{ tmp_average }} °C
     <hr>
   </body>
 </html>

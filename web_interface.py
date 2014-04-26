@@ -21,22 +21,25 @@ class MainHandler(tornado.web.RequestHandler):
 
     def render_graph(self, date):
         db = DBAccess()
-        (average, raw_data) = db.get_data_for_day(date)
+        (average, temp_data, pressure_data) = db.get_data_for_day(date)
         last_temp = db.get_last_temp()
         last_pressure = db.get_last_pressure()
         if average is not None:
             self.render('index.html',
-                        graph_list = str(raw_data),
+                        temp_graph_list = str(temp_data),
+                        pressure_graph_list = str(pressure_data),
                         tmp_average = average,
                         current_temp = last_temp,
                         current_pressure = last_pressure)
         else:
-            data.append(['No data', 0])
+            temp_data = [["Time", "Temperature"], ['No data', 0]]
+            pressure_data = [["Time", "Pressure"], ['No data', 0]]
             self.render('index.html',
-                        graph_list = str(raw_data),
-                        tmp_average = 0,
-                        current_temp = 0,
-                        current_pressure = 0)
+                        temp_graph_list = str(temp_data),
+                        pressure_graph_list = str(pressure_data),
+                        tmp_average = "No Value",
+                        current_temp = "No Value",
+                        current_pressure = "No Value")
 
 class ApiHandler(tornado.web.RequestHandler):
     def get(self):
