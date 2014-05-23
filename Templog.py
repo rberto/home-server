@@ -12,6 +12,8 @@ from web_interface import WebInterface
 import subprocess
 import signal
 import sys
+from btcoin import btcoin
+from dbaccess import DBAccess
 
 # I2C address of the BMP085 sensor.
 SENSOR_ADDRESS = 0x77
@@ -37,6 +39,7 @@ class Templog(object):
         self.temps = []
         self.pressures = []
         self.web_process = None
+        self.bt = None
         
     def signal_handler(self, signal, frame):
         self.logger.info("Killing webinterface.")
@@ -50,6 +53,8 @@ class Templog(object):
         signal.signal(signal.SIGHUP, self.signal_handler)
         self.logger.info("Starting data logging of temperature and pressure.")
         self.__setupdb()
+        # initialise data for bitcoin mining stats log.
+        self.bt = btcoin("https://eclipsemc.com/api.php", "533943365f90f2311df3904bcdbc6c")
         # start the web interface.
         self.web_process = subprocess.Popen(['python', '/opt/Temp/web_interface.py'])
         self.logger.info("Web interface loaded.")
@@ -65,15 +70,26 @@ class Templog(object):
                 # averaging temp and pressure every 10 mins.
                 averagetemp = self.__getaverage(self.temps)
                 averagepressure = self.__getaverage(self.pressures)
+                # Get bitcoins mining stats every 10 mins.
+                btcjson = self.bt.get_user_stat()
                 # Logging these values to the log file.
                 self.__logtofile([averagetemp, averagepressure])
                 self.__logtodb([averagetemp, averagepressure])
+                self.__logbtcoin(btcjson)
                 # Reinitializing the start date and temperature and pressure values.
                 startdate = time.time()
                 self.temps = []
                 self.pressures = []
             # Measuring every 30 seconds.
             time.sleep(30)
+
+    def __logbtcoin(self, json):
+        self.logger.debug("Entering the logbtcoin function.")
+        hashrate = str(json["workers"][0]["hash_rate"])
+        reward = float(json["data"]["user"]["confirmed_rewards"])
+        self.logger.debug("logging %s, %s", hashrate, reward)
+        db = DBAccess()
+        db.store_btcoin_data(hashrate, reward)
 
     def __getaverage(self, li):
         """ returns the average of values contained in the list passed in parameters"""
@@ -103,6 +119,7 @@ class Templog(object):
         dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
         cursor = dbconnection.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS data (key text primary key, year text, month text, day text, hour text, minute text, seconds text, temp text, pressure text)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS btcoin (key integer primary key, hashrate text, confirmedrewards real)")
         dbconnection.commit()
         cursor.close()
         dbconnection.close()
@@ -110,6 +127,7 @@ class Templog(object):
     def __logtodb(self, li):
         """
         """
+        self.logger.debug("Entering the logtodb function.")
         key = time.time()
         now = datetime.now()
         values = [key, now.year, now.month, now.day, now.hour, now.minute, now.second]
@@ -153,4 +171,3 @@ if __name__ == '__main__':
     except:
         logging.error('Catched exeption', exc_info=True)
         raise
-

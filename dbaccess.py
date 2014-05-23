@@ -2,6 +2,7 @@
 # Author: rbertolini
 # Since: 25/04/2014
 import sqlite3
+import time
 from datetime import datetime
 
 DATA_BASE_PATH = '/home/pi/db/temppressure.db'
@@ -64,3 +65,18 @@ class DBAccess():
         else:
             # If theres no data for the Day return None.
             return (None, None, None)
+
+    def store_btcoin_data(self, hash_rate, rewards):
+        cursor = self.__connect().cursor()
+        values = [int(time.time()), hash_rate, rewards]
+        cursor.execute('INSERT INTO btcoin VALUES (?,?,?)', values)
+        cursor.close()
+        self.__disconnect()
+        
+
+
+    def get_btcoin_day_data(self):
+        cursor = self.__connect().cursor()
+        limit = time.time() - 24*60*60
+        cursor.execute('SELECT * from btcoin where key > ? ORDER BY key DESC', limit)
+        # todo, process the data.
