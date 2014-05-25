@@ -74,9 +74,27 @@ class DBAccess():
         self.__disconnect()
         
 
-
     def get_btcoin_day_data(self):
+        """
+        Returns stored hashrate in Mh/s and rewards for the last 24h.
+        return: list of 3 elements tuples. (date, hash rate, reward)
+        """
         cursor = self.__connect().cursor()
-        limit = time.time() - 24*60*60
-        cursor.execute('SELECT * from btcoin where key > ? ORDER BY key DESC', limit)
-        # todo, process the data.
+        limit = (str(int(time.time() - 24*60*60)),)
+        data = []
+        for row in cursor.execute('SELECT * from btcoin where key > ? ORDER BY key DESC', limit):
+            date = int(row[0])
+            hashrate = str(row[1])
+            if "G" in hashrate.upper():
+                hashrate = float(hashrate.split(" ")[0])*1000
+            elif "M" in hashrate.upper():
+                hashrate = float(hashrate.split(" ")[0])
+            elif "K" in hasrate.upper():
+                hashrate = float(hashrate.split(" ")[0])/1000
+            else:
+                hashrate = 0
+            reward = float(row[2])
+            data.append((date, hashrate, reward))
+        cursor.close()
+        self.__disconnect()
+        return data

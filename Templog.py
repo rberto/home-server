@@ -19,9 +19,6 @@ from dbaccess import DBAccess
 SENSOR_ADDRESS = 0x77
 
 class Templog(object):
-# TODO: add debug logging capabilities. Maybe create my
-# own logging module in order to factorise code from
-# wakeshutdown deamon.
     def __init__(self, file_path):
         """ initialise the temperature logging class"""
         self.logger = logging.getLogger(__name__)
