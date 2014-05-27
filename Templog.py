@@ -72,7 +72,10 @@ class Templog(object):
                 # Logging these values to the log file.
                 self.__logtofile([averagetemp, averagepressure])
                 self.__logtodb([averagetemp, averagepressure])
-                self.__logbtcoin(btcjson)
+                if btcjson is not None:
+                    self.__logbtcoin(btcjson)
+                else:
+                    self.logger.debug("Catched Connection Error by get_user_stat.")
                 # Reinitializing the start date and temperature and pressure values.
                 startdate = time.time()
                 self.temps = []

@@ -81,8 +81,10 @@ class DBAccess():
         """
         cursor = self.__connect().cursor()
         limit = (str(int(time.time() - 24*60*60)),)
-        data = []
-        for row in cursor.execute('SELECT * from btcoin where key > ? ORDER BY key DESC', limit):
+        hashdata = []
+        rewarddata = []
+        summ = 0
+        for row in cursor.execute('SELECT * from btcoin where key > ? ORDER BY key ASC', limit):
             date = int(row[0])
             hashrate = str(row[1])
             if "G" in hashrate.upper():
@@ -93,8 +95,11 @@ class DBAccess():
                 hashrate = float(hashrate.split(" ")[0])/1000
             else:
                 hashrate = 0
+            summ = summ + hashrate
             reward = float(row[2])
-            data.append((date, hashrate, reward))
+            hashdata.append([date, hashrate])
+            rewarddata.append([date, reward])
         cursor.close()
         self.__disconnect()
-        return data
+        hashaverage = summ / len(hashdata)
+        return (hashaverage, hashdata, rewarddata)

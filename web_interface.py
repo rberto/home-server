@@ -24,13 +24,18 @@ class MainHandler(tornado.web.RequestHandler):
         (average, temp_data, pressure_data) = db.get_data_for_day(date)
         last_temp = db.get_last_temp()
         last_pressure = db.get_last_pressure()
+        (hash_avg, hashrate_data, reward_data) = db.get_btcoin_day_data()
+        for item in hashrate_data:
+            item.append(hash_avg)
+        hashrate_data.insert(0, ['Time', 'Hash Rate', 'Hash Rate Average'])
         if average is not None:
             self.render('index.html',
                         temp_graph_list = str(temp_data),
                         pressure_graph_list = str(pressure_data),
                         tmp_average = average,
                         current_temp = last_temp,
-                        current_pressure = last_pressure)
+                        current_pressure = last_pressure,
+                        hashrate_graph_list = str(hashrate_data))
         else:
             temp_data = [["Time", "Temperature"], ['No data', 0]]
             pressure_data = [["Time", "Pressure"], ['No data', 0]]
@@ -39,7 +44,8 @@ class MainHandler(tornado.web.RequestHandler):
                         pressure_graph_list = str(pressure_data),
                         tmp_average = "No Value",
                         current_temp = "No Value",
-                        current_pressure = "No Value")
+                        current_pressure = "No Value",
+                        hashrate_graph_list = str(hashrate_data))
 
 class ApiHandler(tornado.web.RequestHandler):
     def get(self):

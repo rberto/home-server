@@ -7,7 +7,10 @@ class btcoin(object):
 
     def get_user_stat(self):
         payload = {'key': self.api_key, 'action': 'userstats'}
-        r = requests.get(self.pool_address, params=payload)
+        try:
+            r = requests.get(self.pool_address, params=payload)
+        except ConnectionError as e:
+            return None
         return r.json()
 
 if __name__ == '__main__':

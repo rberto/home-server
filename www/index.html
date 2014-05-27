@@ -15,11 +15,17 @@
         var pressure_options = {
           title: 'Pressure'
         };
+        var data_hash_rate = google.visualization.arrayToDataTable( {{hashrate_graph_list}} );
+        var hashrate_options = {
+          title: 'Hash Rate in Mh/s'
+        };
 
-        var temp_chart = new google.visualization.LineChart(document.getElementById('chart_div_pressure'));
+        var temp_chart = new google.visualization.LineChart(document.getElementById('chart_div_temp'));
         temp_chart.draw(data_temp, temp_options);
-        var pressure_chart = new google.visualization.LineChart(document.getElementById('chart_div_temp'));
+        var pressure_chart = new google.visualization.LineChart(document.getElementById('chart_div_pressure'));
         pressure_chart.draw(data_pressure, pressure_options);
+        var hashrate_chart = new google.visualization.LineChart(document.getElementById('chart_div_hashrate'));
+        hashrate_chart.draw(data_hash_rate, hashrate_options);
       }
     </script>
 
@@ -35,6 +41,7 @@
     </form>
     <div id="chart_div_temp" style="width: 100%; height: 250px;"></div>
     <div id="chart_div_pressure" style="width: 100%; height: 250px;"></div>
+    <div id="chart_div_hashrate" style="width: 100%; height: 250px;"></div>
     <hr>
     <h2>Minumum temperature&nbsp</h2>
     2013-09-19 06:45:02&nbsp&nbsp&nbsp19.437C
