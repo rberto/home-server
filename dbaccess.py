@@ -9,6 +9,9 @@ DATA_BASE_PATH = '/home/pi/db/temppressure.db'
 
 class DBAccess():
 
+
+# TODO: modify, insert of hashrate so convertion is done directly in Mh/s and not as a str.
+# TODO: modify temp logging so key is an int, not a float. or check sqlite3 doc for better date logging in databases.
     def __init__(self):
         self.dbconnection = None
 
@@ -103,3 +106,17 @@ class DBAccess():
         self.__disconnect()
         hashaverage = summ / len(hashdata)
         return (hashaverage, hashdata, rewarddata)
+
+    def get_data(self, arg, hrs):
+        d = {}
+        con = self.__connect()
+        con.row_factory = sqlite3.Row
+        cursor = con.cursor()
+        limit = str(int(time.time() - hrs*60*60))
+        if arg in ("pressure", "temp"):
+            for row in cursor.execute('SELECT * from data where key > ? ORDER BY key ASC', (limit,)):
+                d[int(float(row["key"]))] = float(row[str(arg)])
+        elif arg in ("hashrate", "confirmedrewards"):
+            for row in cursor.execute('SELECT * from btcoin where key > ? ORDER BY key ASC', (limit,)):
+                d[int(row[0])] = float(row[str(arg)])
+        return d

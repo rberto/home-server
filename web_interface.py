@@ -55,10 +55,29 @@ class ApiHandler(tornado.web.RequestHandler):
         data["pressure"] = db.get_last_pressure()
         self.write(data)
 
+class ChartHandler(tornado.web.RequestHandler):
+    def get(self):
+        arg = self.get_arguments("data_to_display", None)[0]
+        hrs = self.get_arguments("hours_to_display", None)[0]
+        if arg in ("pressure", "temp", "hashrate", "confirmedrewards"):
+            print arg
+            db = DBAccess()
+            data = db.get_data(arg, int(hrs))
+            ldata = [[k,v] for k,v in data.items()] #Sort the list by increassing value of first element of item in list.
+            ldata = sorted(ldata, key=lambda x: x[0])
+            ldata.insert(0, ['Time', str(arg)])
+            self.render('chart.html',
+                        graph_list = str(ldata),
+                        title = str(arg))
+            #self.write(data)
+        else:
+            print arg
+            self.write("error not such data.")
+
 class WebInterface():
     def start(self):
         application = tornado.web.Application(
-            handlers = [(r"/", MainHandler), (r"/api", ApiHandler)],
+            handlers = [(r"/", MainHandler), (r"/api", ApiHandler), (r"/chart", ChartHandler)],
             template_path = os.path.join(os.path.dirname(__file__), "www"),
             autoescape=None)
         application.listen(WEB_INTERFACE_PORT)
