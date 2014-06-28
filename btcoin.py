@@ -7,11 +7,11 @@ class btcoin(object):
 
     def get_user_stat(self):
         payload = {'key': self.api_key, 'action': 'userstats'}
-        try:
-            r = requests.get(self.pool_address, params=payload)
-        except ConnectionError as e:
+        r = requests.get(self.pool_address, params=payload)
+        if r.status_code == requests.codes.ok:    
+            return r.json()
+        else:
             return None
-        return r.json()
 
 if __name__ == '__main__':
     bt = btcoin("https://eclipsemc.com/api.php", "533943365f90f2311df3904bcdbc6c")

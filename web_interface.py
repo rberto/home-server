@@ -39,6 +39,7 @@ class MainHandler(tornado.web.RequestHandler):
         else:
             temp_data = [["Time", "Temperature"], ['No data', 0]]
             pressure_data = [["Time", "Pressure"], ['No data', 0]]
+            hashrate_data.append(["No Value", -1, -1])
             self.render('index.html',
                         temp_graph_list = str(temp_data),
                         pressure_graph_list = str(pressure_data),
@@ -53,7 +54,16 @@ class ApiHandler(tornado.web.RequestHandler):
         db = DBAccess()
         data["temp"]= db.get_last_temp()
         data["pressure"] = db.get_last_pressure()
+        data["logger_status"] = self.get_logger_status()
+        data["hashrate"] = db.get_last_hashrate()
+        data["reward"] = db.get_last_reward()
         self.write(data)
+
+    def get_logger_status(self):
+        if os.path.isfile("/var/run/templog.pid"):
+            return "running"
+        else:
+            return "stopped"
 
 class ChartHandler(tornado.web.RequestHandler):
     def get(self):

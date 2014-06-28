@@ -39,6 +39,23 @@ class DBAccess():
         self.__disconnect()
         return float(s_pressure[0])
 
+    def get_last_hashrate(self):
+        cursor = self.__connect().cursor()
+        cursor.execute('SELECT hashrate FROM btcoin ORDER BY key DESC LIMIT 1')
+        s_hashrate = cursor.fetchone()
+        fhashrate = self.convert_hashrate_to_float(s_hashrate[0])
+        cursor.close()
+        self.__disconnect()
+        return fhashrate
+
+    def get_last_reward(self):
+        cursor = self.__connect().cursor()
+        cursor.execute('SELECT confirmedrewards FROM btcoin ORDER BY key DESC LIMIT 1')
+        s_reward = cursor.fetchone()
+        cursor.close()
+        self.__disconnect()
+        return float(s_reward[0])
+
 
     def get_data_for_day(self, date):
         temp_data = [["Time", "Temperature"]]
@@ -90,22 +107,18 @@ class DBAccess():
         for row in cursor.execute('SELECT * from btcoin where key > ? ORDER BY key ASC', limit):
             date = int(row[0])
             hashrate = str(row[1])
-            if "G" in hashrate.upper():
-                hashrate = float(hashrate.split(" ")[0])*1000
-            elif "M" in hashrate.upper():
-                hashrate = float(hashrate.split(" ")[0])
-            elif "K" in hasrate.upper():
-                hashrate = float(hashrate.split(" ")[0])/1000
-            else:
-                hashrate = 0
+            hashrate = self.convert_hashrate_to_float(hashrate)
             summ = summ + hashrate
             reward = float(row[2])
             hashdata.append([date, hashrate])
             rewarddata.append([date, reward])
         cursor.close()
         self.__disconnect()
-        hashaverage = summ / len(hashdata)
-        return (hashaverage, hashdata, rewarddata)
+        if len(hashdata) != 0:
+            hashaverage = summ / len(hashdata)
+            return (hashaverage, hashdata, rewarddata)
+        else:
+            return (-1, hashdata, rewarddata)
 
     def get_data(self, arg, hrs):
         d = {}
@@ -120,3 +133,17 @@ class DBAccess():
             for row in cursor.execute('SELECT * from btcoin where key > ? ORDER BY key ASC', (limit,)):
                 d[int(row[0])] = float(row[str(arg)])
         return d
+
+
+    def convert_hashrate_to_float(self, hashrate):
+        if "G" in hashrate.upper():
+            fhashrate = float(hashrate.split(" ")[0])*1000
+        elif "M" in hashrate.upper():
+            fhashrate = float(hashrate.split(" ")[0])
+        elif "K" in hashrate.upper():
+            fhashrate = float(hashrate.split(" ")[0])/1000
+        elif hashrate == " ":
+            fhashrate = 0
+        else:
+            fhashrate = -1
+        return fhashrate
