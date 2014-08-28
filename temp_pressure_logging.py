@@ -18,7 +18,8 @@ temps = []
 pressures = []
 start_time = time.time()
 
-print "Initialize sensor on I2C address: %s" % SENSOR_ADDRESS
+if args.debug:
+    print "Initialize sensor on I2C address: %s" % SENSOR_ADDRESS
 bmp085 = Bmp085(SENSOR_ADDRESS, 0)
 
 while time.time() - start_time < args.period:
@@ -35,8 +36,8 @@ while time.time() - start_time < args.period:
 key = time.time()
 now = datetime.now()
 values = [key, now.year, now.month, now.day, now.hour, now.minute, now.second]
-values.append(sum(temps)/len(temps))
-values.append(sum(pressures)/len(pressures))
+values.append(round(sum(temps)/len(temps), 2))
+values.append(round(sum(pressures)/len(pressures), 2))
 if args.debug:
     print "Storing these values in database: %s" %values
 # Convert list to list of str.
