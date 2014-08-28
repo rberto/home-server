@@ -19,7 +19,7 @@ class Bmp085(object):
         self.MB = self.__read16S(0xBA)
         self.MC = self.__read16S(0xBC)
         self.MD = self.__read16S(0xBE)
-        print self.AC1, self.AC2, self.AC3, self.AC4, self.AC5, self.AC6, self.B1, self.B2, self.MB, self.MC, self.MD
+        #print self.AC1, self.AC2, self.AC3, self.AC4, self.AC5, self.AC6, self.B1, self.B2, self.MB, self.MC, self.MD
 
     def __read16S(self, reg):
         hi = self.bus.read_byte_data(self.address,
@@ -68,7 +68,7 @@ class Bmp085(object):
         xlsb = self.bus.read_byte_data(self.address,
                                        0xF8)
         UP = ((msb << 16) + (lsb << 8) + xlsb) >> (8 - mode)
-        print "UP", UP
+        #print "UP", UP
         B6 = B5 - 4000
         X1 = (self.B2 * ( B6 * B6 ) >> 12 ) >> 11
         X2 = (self.AC2 * B6) >> 11
