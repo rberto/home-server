@@ -24,7 +24,7 @@ class MainHandler(tornado.web.RequestHandler):
         (average, temp_data, pressure_data) = db.get_data_for_day(date)
         last_temp = db.get_last_temp()
         last_pressure = db.get_last_pressure()
-        (hash_avg, hashrate_data, reward_data) = db.get_btcoin_day_data()
+        (hash_avg, hashrate_data, reward_data) = ("", [], [])#db.get_btcoin_day_data()
         for item in hashrate_data:
             item.append(hash_avg)
         hashrate_data.insert(0, ['Time', 'Hash Rate', 'Hash Rate Average'])

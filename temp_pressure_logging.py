@@ -45,6 +45,7 @@ values = ["%s" % x for x in values]
 # Connect to database.
 dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
 cursor = dbconnection.cursor()
+cursor.execute("CREATE TABLE IF NOT EXISTS data (key int primary key, year int, month int, day int, hour int, minute int, seconds int, temp real, pressure real)")
 # Insert data into database.
 cursor.execute("INSERT INTO data VALUES (?,?,?,?,?,?,?,?,?)", values)
 dbconnection.commit()
