@@ -58,12 +58,12 @@ class DBAccess():
 
 
     def get_data_for_day(self, date):
-        temp_data = [["Time", "Temperature"]]
-        pressure_data = [["Time", "Pressure"]]
+        temp_data = [["Time", "Temperature", "Temperature Exterieur"]]
+        pressure_data = [["Time", "Pressure", "Pression Exterieur"]]
         cursor = self.__connect().cursor()
         i = 1
         summ = 0
-        for row in cursor.execute('SELECT hour, minute, temp, pressure FROM data WHERE year = ? AND month = ? AND day = ?', [date.year, date.month, date.day]):
+        for row in cursor.execute('SELECT hour,minute,temp,pressure,temp_ext,presure_ext FROM data WHERE year = ? AND month = ? AND day = ?', [date.year, date.month, date.day]):
             # Adding an other empty item (time, value) to the data list.
             temp_data.append([])
             pressure_data.append([])
@@ -73,7 +73,9 @@ class DBAccess():
             # Populating the new item with the value of the relevant info for each of
             # the temp and pressure data list.
             temp_data[i].append(float(row[2]))
+            temp_data[i].append(float(row[4]))
             pressure_data[i].append(float(row[3]))
+            pressure_data[i].append(float(row[5]))
             # Adding together all the temps
             summ = summ + float(row[2])
             i = i + 1

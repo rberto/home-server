@@ -2,6 +2,7 @@ import time
 import os
 import argparse
 import sqlite3
+import pywapi
 from BMP085 import Bmp085
 from datetime import datetime
 
@@ -14,6 +15,7 @@ args = parser.parse_args()
 
 # I2C address of the BMP085 sensor.
 SENSOR_ADDRESS = 0x77
+STATION = "FRXX0099" # Nom de la station de Toulouse Blagnac.
 temps = []
 pressures = []
 start_time = time.time()
@@ -33,11 +35,18 @@ while time.time() - start_time < args.period:
     # Wait for the set time between intervals.
     time.sleep(args.interval)
 
+d = pywapi.get_weather_from_weather_com(STATION, "metric")
+ext_temp = float(d["current_conditions"]["temperature"])
+ext_pressure = float(d["current_conditions"]["barometer"]["reading"])
+
+
 key = time.time()
 now = datetime.now()
 values = [key, now.year, now.month, now.day, now.hour, now.minute, now.second]
 values.append(round(sum(temps)/len(temps), 2))
 values.append(round(sum(pressures)/len(pressures), 2))
+values.append(round(ext_temp, 2))
+values.append(round(ext_pressure*100, 2))
 if args.debug:
     print "Storing these values in database: %s" %values
 # Convert list to list of str.
@@ -45,9 +54,9 @@ values = ["%s" % x for x in values]
 # Connect to database.
 dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
 cursor = dbconnection.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS data (key int primary key, year int, month int, day int, hour int, minute int, seconds int, temp real, pressure real)")
+cursor.execute("CREATE TABLE IF NOT EXISTS data (key int primary key, year int, month int, day int, hour int, minute int, seconds int, temp real, pressure real, temp_ext real, presure_ext real)")
 # Insert data into database.
-cursor.execute("INSERT INTO data VALUES (?,?,?,?,?,?,?,?,?)", values)
+cursor.execute("INSERT INTO data VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
 dbconnection.commit()
 cursor.close()
 dbconnection.close()
