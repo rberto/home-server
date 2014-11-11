@@ -31,6 +31,22 @@ class DBAccess():
         self.__disconnect()
         return float(s_temp[0])
 
+    def get_last_ext_pressure(self):
+        cursor = self.__connect().cursor()
+        cursor.execute('SELECT presure_ext FROM data ORDER BY key DESC LIMIT 1')
+        s_pressure_ext = cursor.fetchone()
+        cursor.close()
+        self.__disconnect()
+        return float(s_pressure_ext[0])
+
+    def get_last_ext_temp(self):
+        cursor = self.__connect().cursor()
+        cursor.execute('SELECT temp_ext FROM data ORDER BY key DESC LIMIT 1')
+        s_temp_ext = cursor.fetchone()
+        cursor.close()
+        self.__disconnect()
+        return float(s_temp_ext[0])
+
     def get_last_pressure(self):
         cursor = self.__connect().cursor()
         cursor.execute('SELECT pressure FROM data ORDER BY key DESC LIMIT 1')

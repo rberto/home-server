@@ -54,9 +54,11 @@ class ApiHandler(tornado.web.RequestHandler):
         db = DBAccess()
         data["temp"]= db.get_last_temp()
         data["pressure"] = db.get_last_pressure()
+        data["temp_ext"] = db.get_last_ext_temp()
+        data["pressure_ext"] = db.get_last_ext_pressure()
         data["logger_status"] = self.get_logger_status()
-        data["hashrate"] = db.get_last_hashrate()
-        data["reward"] = db.get_last_reward()
+        #data["hashrate"] = db.get_last_hashrate()
+        #data["reward"] = db.get_last_reward()
         self.write(data)
 
     def get_logger_status(self):
