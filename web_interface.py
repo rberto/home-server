@@ -1,6 +1,7 @@
 import os
 import tornado.ioloop
 import tornado.web
+import tornado.httpserver
 import sqlite3
 from datetime import datetime
 from dbaccess import DBAccess
@@ -92,7 +93,16 @@ class WebInterface():
             handlers = [(r"/", MainHandler), (r"/api", ApiHandler), (r"/chart", ChartHandler)],
             template_path = os.path.join(os.path.dirname(__file__), "www"),
             autoescape=None)
-        application.listen(WEB_INTERFACE_PORT)
+
+
+
+        http_server = tornado.httpserver.HTTPServer(application, ssl_options={
+                "certfile": os.path.join(os.path.dirname(__file__), "keys", "server.crt"),
+                "keyfile": os.path.join(os.path.dirname(__file__), "keys", "server.key"),
+                })
+
+        http_server.listen(WEB_INTERFACE_PORT)
+        ##application.listen(WEB_INTERFACE_PORT)
         tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
