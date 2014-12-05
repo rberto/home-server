@@ -11,10 +11,19 @@ class DBAccess():
 
 
 # TODO: modify, insert of hashrate so convertion is done directly in Mh/s and not as a str.
-# TODO: modify temp logging so key is an int, not a float. or check sqlite3 doc for better date logging in databases.
     def __init__(self):
         self.dbconnection = None
+        self.__connect()
+        self.cursor = None
 
+    def __enter__(self):
+        self.cursor = self.__connect().cursor()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.cursor.close()
+        self.__disconnect()
+        
     def __connect(self):
         self.dbconnection = sqlite3.connect(DATA_BASE_PATH)
         return self.dbconnection
@@ -23,42 +32,40 @@ class DBAccess():
         self.dbconnection.commit()
         self.dbconnection.close()
 
+    def temp_data_last_hours(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT hour, minute, temp, temp_ext from data where key > ? ORDER BY key ASC', (limit,)):
+            yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2]), float(row[3])]
+
+    def pressure_data_last_hours(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT hour, minute, pressure, presure_ext from data where key > ? ORDER BY key ASC', (limit,)):
+            yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2]), float(row[3])]
+
     def get_last_temp(self):
-        cursor = self.__connect().cursor()
-        cursor.execute('SELECT temp FROM data ORDER BY key DESC LIMIT 1')
-        s_temp = cursor.fetchone()
-        cursor.close()
-        self.__disconnect()
+        self.cursor.execute('SELECT temp FROM data ORDER BY key DESC LIMIT 1')
+        s_temp = self.cursor.fetchone()
         return float(s_temp[0])
 
     def get_last_ext_pressure(self):
-        cursor = self.__connect().cursor()
-        cursor.execute('SELECT presure_ext FROM data ORDER BY key DESC LIMIT 1')
-        s_pressure_ext = cursor.fetchone()
-        cursor.close()
-        self.__disconnect()
+        self.cursor.execute('SELECT presure_ext FROM data ORDER BY key DESC LIMIT 1')
+        s_pressure_ext = self.cursor.fetchone()
         return float(s_pressure_ext[0])
 
     def get_last_ext_temp(self):
-        cursor = self.__connect().cursor()
-        cursor.execute('SELECT temp_ext FROM data ORDER BY key DESC LIMIT 1')
-        s_temp_ext = cursor.fetchone()
-        cursor.close()
-        self.__disconnect()
+        self.cursor.execute('SELECT temp_ext FROM data ORDER BY key DESC LIMIT 1')
+        s_temp_ext = self.cursor.fetchone()
         return float(s_temp_ext[0])
 
     def get_last_pressure(self):
-        cursor = self.__connect().cursor()
-        cursor.execute('SELECT pressure FROM data ORDER BY key DESC LIMIT 1')
-        s_pressure = cursor.fetchone()
-        cursor.close()
-        self.__disconnect()
+        self.cursor.execute('SELECT pressure FROM data ORDER BY key DESC LIMIT 1')
+        s_pressure = self.cursor.fetchone()
         return float(s_pressure[0])
 
     def get_last_hashrate(self):
         cursor = self.__connect().cursor()
         cursor.execute('SELECT hashrate FROM btcoin ORDER BY key DESC LIMIT 1')
-        s_hashrate = cursor.fetchone()
+        s_hashrate = self.cursor.fetchone()
         fhashrate = self.convert_hashrate_to_float(s_hashrate[0])
         cursor.close()
         self.__disconnect()

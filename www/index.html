@@ -1,5 +1,13 @@
 <html>
   <head>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--[if lte IE 8]>
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-old-ie-min.css">
+	<![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/grids-responsive-min.css">
+    <!--<![endif]-->
     <title>Raspberry Pi Temperature Logger</title>
 
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -7,25 +15,18 @@
       google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
-        var data_temp = google.visualization.arrayToDataTable( {{temp_graph_list}} );
+      var data_temp = google.visualization.arrayToDataTable( {{temp_graph_list}} );
+      var data_pressure = google.visualization.arrayToDataTable( {{pressure_graph_list}} );
         var temp_options = {
           title: 'Temperature'
         };
-        var data_pressure = google.visualization.arrayToDataTable( {{pressure_graph_list}} );
         var pressure_options = {
           title: 'Pressure'
         };
-        var data_hash_rate = google.visualization.arrayToDataTable( {{hashrate_graph_list}} );
-        var hashrate_options = {
-          title: 'Hash Rate in Mh/s'
-        };
-
         var temp_chart = new google.visualization.LineChart(document.getElementById('chart_div_temp'));
+      var pressure_chart = new google.visualization.LineChart(document.getElementById('chart_div_pressure'));
         temp_chart.draw(data_temp, temp_options);
-        var pressure_chart = new google.visualization.LineChart(document.getElementById('chart_div_pressure'));
-        pressure_chart.draw(data_pressure, pressure_options);
-        var hashrate_chart = new google.visualization.LineChart(document.getElementById('chart_div_hashrate'));
-        hashrate_chart.draw(data_hash_rate, hashrate_options);
+      pressure_chart.draw(data_pressure, pressure_options);
       }
     </script>
 
@@ -34,21 +35,23 @@
     <h1>Raspberry Pi Temperature Logger</h1>
     {{ current_temp }} °C // {{ current_pressure }} mPa
     <hr>
+    <h2>Average temperature</h2>
+    {{ tmp_average }} °C
+    <hr>
     <h2>Temperature Chart</h2>
     <form method="POST">
       Day to display: <input type="date" name="selectedday">
       <input type="submit">
     </form>
-    <div id="chart_div_temp" style="width: 100%; height: 250px;"></div>
-    <div id="chart_div_pressure" style="width: 100%; height: 250px;"></div>
-    <div id="chart_div_hashrate" style="width: 100%; height: 250px;"></div>
-    <hr>
-    <h2>Minumum temperature&nbsp</h2>
-    2013-09-19 06:45:02&nbsp&nbsp&nbsp19.437C
-    <h2>Maximum temperature</h2>
-    2013-09-19 15:00:02&nbsp&nbsp&nbsp22.75C
-    <h2>Average temperature</h2>
-    {{ tmp_average }} °C
+    <div class="pure-g">
+      <div class="pure-u-1 pure-u-md-1-2">
+	<div id="chart_div_temp" style="width: 100%; height: 250px;"></div>
+      </div>
+      <div class="pure-u-1 pure-u-md-1-2">
+	<div id="chart_div_pressure" style="width: 100%; height: 250px;"></div>
+      </div>
+    </div>
+    <!--<div id="chart_div_hashrate" style="width: 100%; height: 250px;"></div>-->
     <hr>
   </body>
 </html>
