@@ -7,6 +7,8 @@ import sqlite3
 from datetime import datetime
 from dbaccess import DBAccess
 
+import cgmclt
+
 WEB_INTERFACE_PORT = 8889
 API_PORT = 8899
 USER = "romain"
@@ -34,19 +36,23 @@ class ApiHandler(tornado.web.RequestHandler):
     
     def get(self):
         print repr(self.request)
+        data = dict()
         user = str(self.get_argument("user", None))
         password = str(self.get_argument("password", None))
+        datatype = str(self.get_argument("datatype", None))
         if user == USER and password == PASSWORD:
-            data = dict()
-            with DBAccess() as db:
-                data["temp"]= db.get_last_temp()
-                data["pressure"] = db.get_last_pressure()
-                data["temp_ext"] = db.get_last_ext_temp()
-                data["pressure_ext"] = db.get_last_ext_pressure()
-            self.write(data)
+            if datatype == "weather":
+                with DBAccess() as db:
+                    data["temp"]= db.get_last_temp()
+                    data["pressure"] = db.get_last_pressure()
+                    data["temp_ext"] = db.get_last_ext_temp()
+                    data["pressure_ext"] = db.get_last_ext_pressure()
+            elif datatype == "miner":
+                cg = cgmclt.CgminerClient("192.168.1.72", 4028)
+                data = cg.command("summary", "")
         else:
             raise tornado.web.HTTPError(403, "Wrong password and/or username.")
-
+        self.write(data)
 
 class WebInterface():
     def start(self):
