@@ -37,6 +37,8 @@ class ApiHandler(tornado.web.RequestHandler):
     def get(self):
         print repr(self.request)
         data = dict()
+        temp24 = []
+        pressure24 = []
         user = str(self.get_argument("user", None))
         password = str(self.get_argument("password", None))
         datatype = str(self.get_argument("datatype", None))
@@ -47,6 +49,12 @@ class ApiHandler(tornado.web.RequestHandler):
                     data["pressure"] = db.get_last_pressure()
                     data["temp_ext"] = db.get_last_ext_temp()
                     data["pressure_ext"] = db.get_last_ext_pressure()
+                    for elt in db.temp_data_last_hours():
+                        temp24.append(elt)
+                    for elt in db.pressure_data_last_hours():
+                        pressure24.append(elt)
+                    data["temp24"] = temp24
+                    data["pressure24"] = pressure24
             elif datatype == "miner":
                 cg = cgmclt.CgminerClient("192.168.1.72", 4028)
                 data = cg.command("summary", "")
