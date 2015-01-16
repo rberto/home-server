@@ -6,6 +6,7 @@ import ssl
 import sqlite3
 from datetime import datetime
 from dbaccess import DBAccess
+from netstatus import netstatus
 
 import cgmclt
 
@@ -58,6 +59,12 @@ class ApiHandler(tornado.web.RequestHandler):
             elif datatype == "miner":
                 cg = cgmclt.CgminerClient("192.168.1.72", 4028)
                 data = cg.command("summary", "")
+            elif datatype == "network":
+                ns = netstatus()
+                netlist = []
+                for ip, name in ns.get_connected_devices():
+                    netlist.append({"ip": ip, "name": name})
+                data["network"] = netlist
         else:
             raise tornado.web.HTTPError(403, "Wrong password and/or username.")
         self.write(data)
