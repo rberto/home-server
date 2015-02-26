@@ -58,7 +58,9 @@ class ApiHandler(tornado.web.RequestHandler):
                     data["pressure24"] = pressure24
             elif datatype == "miner":
                 cg = cgmclt.CgminerClient("192.168.1.72", 4028)
-                data = cg.command("summary", "")
+                data["SUMMARY"] = cg.command("summary", "")["SUMMARY"]
+                data["STATS"] = cg.command("stats", "")["STATS"]
+                data["COIN"] = cg.command("coin", "")["COIN"]
             elif datatype == "network":
                 ns = netstatus()
                 netlist = []
