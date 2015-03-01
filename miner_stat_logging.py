@@ -46,7 +46,7 @@ while time.time()-start_time < args.period:
         print "fan speed = %s"%fanspeed[len(fanspeed)-1]
     time.sleep(args.interval)
 
-key = time.time()
+key = int(time.time())
 hashrate_avg = list_avg(hashrate)
 temp1_avg = list_avg(temp1)
 temp2_avg = list_avg(temp2)
@@ -62,17 +62,18 @@ if args.debug:
     print "Storing %s values in database"%str(values)
 cursor.execute("INSERT INTO data VALUES (?,?,?,?,?,?)", values)
 
-# This part is commented because insert into database does not work and I don't no why.
-#cursor.execute("CREATE TABLE IF NOT EXISTS diff (key int primary key, difficulty real)")
-#cursor.execute("SELECT difficulty FROM diff ORDER BY key DESC LIMIT 1")
-#last_difficulty = cursor.fetchone()
+cursor.execute("CREATE TABLE IF NOT EXISTS diff (key int primary key, difficulty real)")
+cursor.execute("SELECT difficulty FROM diff ORDER BY key DESC LIMIT 1")
+last_difficulty = cursor.fetchone()
 
-#if args.debug:
-#    print "Last Difficulty = %s"%last_difficulty
-#if (difficulty != last_difficulty):
-#    values = [key, difficulty]
-#    if args.debug:
-#        cursor.execute("INSERT INTO diff VALUES (?,?)", values)
-#        print "Storing %s values in database"%str(values)
+if args.debug:
+    print "Last Difficulty = %s"%last_difficulty
+if (difficulty != last_difficulty):
+    values = [key, difficulty]
+    if args.debug:
+        cursor.execute("INSERT INTO diff VALUES (?,?)", values)
+        print "Storing %s values in database"%str(values)
 
+dbconnection.commit()
 cursor.close()
+dbconnection.close()
