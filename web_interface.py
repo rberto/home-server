@@ -45,7 +45,7 @@ class ApiHandler(tornado.web.RequestHandler):
         datatype = str(self.get_argument("datatype", None))
         if user == USER and password == PASSWORD:
             if datatype == "weather":
-                with DBAccess() as db:
+                with DBAccess('temppressure.db') as db:
                     data["temp"]= db.get_last_temp()
                     data["pressure"] = db.get_last_pressure()
                     data["temp_ext"] = db.get_last_ext_temp()
@@ -57,10 +57,15 @@ class ApiHandler(tornado.web.RequestHandler):
                     data["temp24"] = temp24
                     data["pressure24"] = pressure24
             elif datatype == "miner":
+                hash24 = []
                 cg = cgmclt.CgminerClient("192.168.1.72", 4028)
                 data["SUMMARY"] = cg.command("summary", "")["SUMMARY"]
                 data["STATS"] = cg.command("stats", "")["STATS"]
                 data["COIN"] = cg.command("coin", "")["COIN"]
+                with DBAccess('miner.db') as db:
+                    for elt in db.hash_data_last_hours():
+                        hash24.append(elt)
+                    data["hash24"] = hash24
             elif datatype == "network":
                 ns = netstatus()
                 netlist = []

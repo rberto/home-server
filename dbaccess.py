@@ -5,13 +5,15 @@ import sqlite3
 import time
 from datetime import datetime
 
-DATA_BASE_PATH = '/home/pi/db/temppressure.db'
+DATA_BASE_PATH = '/home/pi/db/'
+
 
 class DBAccess():
 
 
 # TODO: modify, insert of hashrate so convertion is done directly in Mh/s and not as a str.
-    def __init__(self):
+    def __init__(self, dbname):
+        self.path = DATA_BASE_PATH + dbname
         self.dbconnection = None
         self.__connect()
         self.cursor = None
@@ -25,7 +27,7 @@ class DBAccess():
         self.__disconnect()
         
     def __connect(self):
-        self.dbconnection = sqlite3.connect(DATA_BASE_PATH)
+        self.dbconnection = sqlite3.connect(self.path)
         return self.dbconnection
 
     def __disconnect(self):
@@ -41,6 +43,12 @@ class DBAccess():
         limit = str(int(time.time() - hrs*60*60))        
         for row in self.cursor.execute('SELECT hour, minute, pressure, presure_ext from data where key > ? ORDER BY key ASC', (limit,)):
             yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2]), float(row[3])]
+
+    def hash_data_last_hours(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT key, hashrate from data where key > ? ORDER BY key ASC', (limit,)):
+            yield [int(row[0]), float(row[1])]
+
 
     def get_last_temp(self):
         self.cursor.execute('SELECT temp FROM data ORDER BY key DESC LIMIT 1')
