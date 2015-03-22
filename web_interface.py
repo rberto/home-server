@@ -58,6 +58,7 @@ class ApiHandler(tornado.web.RequestHandler):
                     data["pressure24"] = pressure24
             elif datatype == "miner":
                 hash24 = []
+                error24 = []
                 cg = cgmclt.CgminerClient("192.168.1.72", 4028)
                 data["SUMMARY"] = cg.command("summary", "")["SUMMARY"]
                 data["STATS"] = cg.command("stats", "")["STATS"]
@@ -66,6 +67,9 @@ class ApiHandler(tornado.web.RequestHandler):
                     for elt in db.hash_data_last_hours():
                         hash24.append(elt)
                     data["hash24"] = hash24
+                    for elt in db.error_data_last_hours():
+                        error24.append(elt)
+                    data["error24"] = error24
             elif datatype == "network":
                 ns = netstatus()
                 netlist = []
