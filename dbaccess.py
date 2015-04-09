@@ -54,6 +54,10 @@ class DBAccess():
         for row in self.cursor.execute('SELECT key, errorrate from data where key > ? ORDER BY key ASC', (limit,)):
             yield [int(row[0]), float(row[1])]
 
+    def asic_temp_data_last_hours(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT key, temp1, temp2 from data where key > ? ORDER BY key ASC', (limit,)):
+            yield [int(row[0]), float(row[1]), float(row[2])]
 
     def get_last_temp(self):
         self.cursor.execute('SELECT temp FROM data ORDER BY key DESC LIMIT 1')
