@@ -20,7 +20,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         temp_data = [["Time", "Temp", "Ext Temp"]]
         pressure_data = [["Time", "Pressure", "Ext Pressure"]]
-        with DBAccess() as db:
+        with DBAccess('temppressure.db') as db:
             for data in db.temp_data_last_hours():
                 temp_data.append(data)
             for data in db.pressure_data_last_hours():
