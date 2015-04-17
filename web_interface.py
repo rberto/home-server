@@ -7,6 +7,7 @@ import sqlite3
 from datetime import datetime
 from dbaccess import DBAccess
 from netstatus import netstatus
+from actions import actions
 
 import cgmclt
 
@@ -80,6 +81,13 @@ class ApiHandler(tornado.web.RequestHandler):
                 for ip, name in ns.get_connected_devices():
                     netlist.append({"ip": ip, "name": name})
                 data["network"] = netlist
+            elif datatype == "actions":
+                data = actions().list_actions()
+            elif datatype == "action":
+                action_name = str(self.get_argument("name", None))
+                method = getattr(actions(), action_name)
+                data["msg"] = method()
+                
         else:
             raise tornado.web.HTTPError(403, "Wrong password and/or username.")
         self.write(data)

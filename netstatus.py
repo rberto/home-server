@@ -1,10 +1,22 @@
 import nmap
 import struct
 import socket
+import tornado.httpclient
 
 class netstatus():
 
     MEDIA_CENTER_MAC = "1c:6f:65:c9:bd:0a"
+    MEDIA_CENTER_IP = "192.168.1.50"
+    SHUTDOWN_PORT = 8886
+    SHUTDOWN_USER = "romain"
+    SHUTDOWN_PASSWORD = "aqw"
+    SHUTDOWN_MSG = "shutdown"
+
+    def find_listening_devices(self, port):
+        nm = nmap.PortScanner()
+        nm.scan(hosts='192.168.1.0/24', arguments="-p" + str(port) +"  --open")
+        for x in nm.all_hosts():
+            yield x
 
     def get_connected_devices(self):
         nm = nmap.PortScanner()
@@ -34,9 +46,23 @@ class netstatus():
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.sendto(send_data, ('<broadcast>', 7))
 
+    def shutdown(self, ip):
+        http_client = tornado.httpclient.HTTPClient()
+        try:
+            response = http_client.fetch("http://" + ip + ":" + str(netstatus.SHUTDOWN_PORT) + "/?user=" + netstatus.SHUTDOWN_USER + "&password=" + netstatus.SHUTDOWN_PASSWORD + "&action=" + netstatus.SHUTDOWN_MSG)
+            http_client.close()
+            return "Done"
+        except tornado.httpclient.HTTPError as e:
+            # HTTPError is raised for non-200 responses; the response
+            # can be found in e.response.
+            http_client.close()
+            return "Error: OB" + str(e)
+        except Exception as e:
+            # Other errors are possible, such as IOError.
+            http_client.close()
+            print "Error: " + str(e)
+
+
 
 if __name__ == "__main__":
-
-    netstatus().wake_on_lan(netstatus.MEDIA_CENTER_MAC)
-    for add, name in netstatus().get_connected_devices():
-        print add, name
+    netstatus().find_listening_devices(8886)
