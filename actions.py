@@ -19,8 +19,12 @@ class actions():
 
     def shutdown_all(self):
         """ ShutDown all device"""
+        ips = ""
         for ip in netstatus().find_listening_devices(netstatus.SHUTDOWN_PORT):
             netstatus().shutdown(ip)
+            ips = ips + str(ip) + ";"
+        return ips
+        
 
     def list_actions(self):
         """ 
