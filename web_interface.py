@@ -44,6 +44,7 @@ class ApiHandler(tornado.web.RequestHandler):
         user = str(self.get_argument("user", None))
         password = str(self.get_argument("password", None))
         datatype = str(self.get_argument("datatype", None))
+        time = int(self.get_argument("time", 24))
         if user == USER and password == PASSWORD:
             if datatype == "weather":
                 with DBAccess('temppressure.db') as db:
@@ -51,9 +52,9 @@ class ApiHandler(tornado.web.RequestHandler):
                     data["pressure"] = db.get_last_pressure()
                     data["temp_ext"] = db.get_last_ext_temp()
                     data["pressure_ext"] = db.get_last_ext_pressure()
-                    for elt in db.temp_data_last_hours():
+                    for elt in db.temp_data_last_hours(time):
                         temp24.append(elt)
-                    for elt in db.pressure_data_last_hours():
+                    for elt in db.pressure_data_last_hours(time):
                         pressure24.append(elt)
                     data["temp24"] = temp24
                     data["pressure24"] = pressure24
@@ -66,13 +67,13 @@ class ApiHandler(tornado.web.RequestHandler):
                 data["STATS"] = cg.command("stats", "")["STATS"]
                 data["COIN"] = cg.command("coin", "")["COIN"]
                 with DBAccess('miner.db') as db:
-                    for elt in db.hash_data_last_hours():
+                    for elt in db.hash_data_last_hours(time):
                         hash24.append(elt)
                     data["hash24"] = hash24
-                    for elt in db.error_data_last_hours():
+                    for elt in db.error_data_last_hours(time):
                         error24.append(elt)
                     data["error24"] = error24
-                    for elt in db.asic_temp_data_last_hours():
+                    for elt in db.asic_temp_data_last_hours(time):
                         asic_temp.append(elt)
                     data["asic_temp"] = asic_temp
             elif datatype == "network":
