@@ -35,6 +35,14 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 class ApiHandler(tornado.web.RequestHandler):
+
+    def build_object(self, title, value, avg, unit):
+        obj = dict()
+        obj["title"] = title
+        obj["value"] = value
+        obj["avg"] = avg
+        obj["unit"] = unit
+        return obj
     
     def get(self):
         print repr(self.request)
@@ -46,6 +54,76 @@ class ApiHandler(tornado.web.RequestHandler):
         datatype = str(self.get_argument("datatype", None))
         time = int(self.get_argument("time", 24))
         if user == USER and password == PASSWORD:
+            if datatype == "summary":
+                objs = []
+                with DBAccess('temppressure.db') as db:
+                    summ1 = 0
+                    summ2 = 0
+                    nbofelt = 0
+                    for elt in db.temp_data_last_hours(time):
+                        summ1 = summ1 + elt[1]
+                        summ2 = summ2 + elt[2]
+                        nbofelt = nbofelt + 1
+                    data["avg_temp"] = round(summ1 / nbofelt, 2)
+                    data["avg_temp_ext"] = round(summ2 / nbofelt, 2)
+                    objs.append(self.build_object("Inside Temp",
+                                                  db.get_last_temp(),
+                                                  round(summ1 / nbofelt, 2),
+                                                  "C"))
+                    objs.append(self.build_object("Outside Temp",
+                                                  db.get_last_ext_temp(),
+                                                  round(summ2 / nbofelt, 2),
+                                                  "C"))
+                    summ1 = 0
+                    summ2 = 0
+                    nbofelt = 0
+                    for elt in db.pressure_data_last_hours(time):
+                        summ1 = summ1 + elt[1]
+                        summ2 = summ2 + elt[2]
+                        nbofelt = nbofelt + 1
+                    objs.append(self.build_object("Inside Pressure",
+                                                  round(db.get_last_pressure()/1000, 2),
+                                                  round((summ1 / nbofelt)/1000, 2),
+                                                  "kPa"))
+                    objs.append(self.build_object("Outside Pressure",
+                                                  round(db.get_last_pressure()/1000, 2),
+                                                  round((summ2 / nbofelt)/1000, 2),
+                                                  "kPa"))
+                with DBAccess('miner.db') as db:
+                    summ1 = 0 
+                    nbofelt = 0
+                    for elt in db.hash_data_last_hours(time):
+                        summ1 = summ1 + elt[1]
+                        nbofelt = nbofelt + 1
+                    objs.append(self.build_object("Hash Rate",
+                                                  db.get_last_hashrate(),
+                                                  round(summ1 / nbofelt, 2),
+                                                  "GH/s"))
+                    summ1 = 0 
+                    nbofelt = 0
+                    for elt in db.error_data_last_hours(time):
+                        summ1 = summ1 + elt[1]
+                        nbofelt = nbofelt + 1
+                    objs.append(self.build_object("Error Rate",
+                                                  round(db.get_last_errorrate(), 2),
+                                                  round(summ1 / nbofelt, 2),
+                                                  "%"))
+                    summ1 = 0 
+                    summ2 = 0
+                    nbofelt = 0
+                    for elt in db.asic_temp_data_last_hours(time):
+                        summ1 = summ1 + elt[1]
+                        summ2 = summ2 + elt[2]
+                        nbofelt = nbofelt + 1
+                    objs.append(self.build_object("Asic1 Temp",
+                                                  db.get_last_asic1_temp(),
+                                                  round(summ1 / nbofelt, 2),
+                                                  "C"))
+                    objs.append(self.build_object("Asic2 Temp",
+                                                  db.get_last_asic2_temp(),
+                                                  round(summ2 / nbofelt, 2),
+                                                  "C"))
+                data["data"] = objs
             if datatype == "weather":
                 with DBAccess('temppressure.db') as db:
                     data["temp"]= db.get_last_temp()
@@ -82,9 +160,9 @@ class ApiHandler(tornado.web.RequestHandler):
                 for ip, name in ns.get_connected_devices():
                     netlist.append({"ip": ip, "name": name})
                 data["network"] = netlist
-            elif datatype == "actions":
-                data = actions().list_actions()
-            elif datatype == "action":
+            elif datatype == "list_actions":
+                data["data"] = actions().list_actions()
+            elif datatype == "send_action":
                 action_name = str(self.get_argument("name", None))
                 method = getattr(actions(), action_name)
                 data["msg"] = method()

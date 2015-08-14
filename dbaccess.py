@@ -80,13 +80,26 @@ class DBAccess():
         return float(s_pressure[0])
 
     def get_last_hashrate(self):
-        cursor = self.__connect().cursor()
-        cursor.execute('SELECT hashrate FROM btcoin ORDER BY key DESC LIMIT 1')
-        s_hashrate = self.cursor.fetchone()
-        fhashrate = self.convert_hashrate_to_float(s_hashrate[0])
-        cursor.close()
-        self.__disconnect()
-        return fhashrate
+        self.cursor.execute('SELECT hashrate FROM data ORDER BY key DESC LIMIT 1')
+        s_hashrate = float(self.cursor.fetchone()[0])
+#        fhashrate = self.convert_hashrate_to_float(s_hashrate[0])
+        return s_hashrate
+
+    def get_last_errorrate(self):
+        self.cursor.execute('SELECT errorrate FROM data ORDER BY key DESC LIMIT 1')
+        errorrate = float(self.cursor.fetchone()[0])
+        return errorrate
+
+    def get_last_asic1_temp(self):
+        self.cursor.execute('SELECT temp1 FROM data ORDER BY key DESC LIMIT 1')
+        temp = float(self.cursor.fetchone()[0])
+        return temp
+
+    def get_last_asic2_temp(self):
+        self.cursor.execute('SELECT temp2 FROM data ORDER BY key DESC LIMIT 1')
+        temp = float(self.cursor.fetchone()[0])
+        return temp
+
 
     def get_last_reward(self):
         cursor = self.__connect().cursor()

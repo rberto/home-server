@@ -31,12 +31,15 @@ class actions():
         Get list of all the actions available. With its description
         Resutl will not contain this method.
         """
-        result = dict()
+        actionlist = []
         for method_tuple in inspect.getmembers(actions, predicate=inspect.ismethod):
             if method_tuple[0] != "list_actions":
                 doc = inspect.getdoc(getattr(actions, method_tuple[0]))
-                result[method_tuple[0]] = doc
-        return result
+                result = dict()
+                result["title"] = method_tuple[0]
+                result["description"] = doc
+                actionlist.append(result)
+        return actionlist
 
 if __name__ == "__main__":
     print actions().list_actions()
