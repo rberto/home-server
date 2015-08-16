@@ -33,28 +33,74 @@ class DBAccess():
     def __disconnect(self):
         self.dbconnection.commit()
         self.dbconnection.close()
+        
+    def get_temp_in_data(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT hour, minute, temp from data where key > ? ORDER BY key ASC', (limit,)):
+            yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2])]
+
+    def get_temp_out_data(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT hour, minute, temp_ext from data where key > ? ORDER BY key ASC', (limit,)):
+            yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2])]
+
+    def get_pressure_in_data(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT hour, minute, pressure from data where key > ? ORDER BY key ASC', (limit,)):
+            yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2])]
+
+    def get_pressure_out_data(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT hour, minute, presure_ext from data where key > ? ORDER BY key ASC', (limit,)):
+            yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2])]
+
+    def get_hash_rate_data(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT key, hashrate from data where key > ? ORDER BY key ASC', (limit,)):
+            yield [int(row[0]), float(row[1])]
+
+    def get_error_rate_data(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT key, errorrate from data where key > ? ORDER BY key ASC', (limit,)):
+            yield [int(row[0]), float(row[1])]
+
+    def get_asic1_temp_data(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT key, temp1 from data where key > ? ORDER BY key ASC', (limit,)):
+            yield [int(row[0]), float(row[1])]
+
+    def get_asic2_temp_data(self, hrs=24):
+        limit = str(int(time.time() - hrs*60*60))        
+        for row in self.cursor.execute('SELECT key, temp2 from data where key > ? ORDER BY key ASC', (limit,)):
+            yield [int(row[0]), float(row[1])]
+
 
     def temp_data_last_hours(self, hrs=24):
+        """ Should be good to delete"""
         limit = str(int(time.time() - hrs*60*60))        
         for row in self.cursor.execute('SELECT hour, minute, temp, temp_ext from data where key > ? ORDER BY key ASC', (limit,)):
             yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2]), float(row[3])]
 
     def pressure_data_last_hours(self, hrs=24):
+        """ Should be good to delete"""
         limit = str(int(time.time() - hrs*60*60))        
         for row in self.cursor.execute('SELECT hour, minute, pressure, presure_ext from data where key > ? ORDER BY key ASC', (limit,)):
             yield ["%s:%s" % (str(row[0]), str(row[1])), float(row[2]), float(row[3])]
 
     def hash_data_last_hours(self, hrs=24):
+        """ Should be good to delete"""
         limit = str(int(time.time() - hrs*60*60))        
         for row in self.cursor.execute('SELECT key, hashrate from data where key > ? ORDER BY key ASC', (limit,)):
             yield [int(row[0]), float(row[1])]
 
     def error_data_last_hours(self, hrs=24):
+        """ Should be good to delete"""
         limit = str(int(time.time() - hrs*60*60))        
         for row in self.cursor.execute('SELECT key, errorrate from data where key > ? ORDER BY key ASC', (limit,)):
             yield [int(row[0]), float(row[1])]
 
     def asic_temp_data_last_hours(self, hrs=24):
+        """ Should be good to delete"""
         limit = str(int(time.time() - hrs*60*60))        
         for row in self.cursor.execute('SELECT key, temp1, temp2 from data where key > ? ORDER BY key ASC', (limit,)):
             yield [int(row[0]), float(row[1]), float(row[2])]

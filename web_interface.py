@@ -36,8 +36,9 @@ class MainHandler(tornado.web.RequestHandler):
 
 class ApiHandler(tornado.web.RequestHandler):
 
-    def build_object(self, title, value, avg, unit):
+    def build_object(self, key, title, value, avg, unit):
         obj = dict()
+        obj["key"] = key
         obj["title"] = title
         obj["value"] = value
         obj["avg"] = avg
@@ -66,11 +67,13 @@ class ApiHandler(tornado.web.RequestHandler):
                         nbofelt = nbofelt + 1
                     data["avg_temp"] = round(summ1 / nbofelt, 2)
                     data["avg_temp_ext"] = round(summ2 / nbofelt, 2)
-                    objs.append(self.build_object("Inside Temp",
+                    objs.append(self.build_object("temp_in", 
+                                                  "Inside Temp",
                                                   db.get_last_temp(),
                                                   round(summ1 / nbofelt, 2),
                                                   "C"))
-                    objs.append(self.build_object("Outside Temp",
+                    objs.append(self.build_object("temp_out",
+                                                  "Outside Temp",
                                                   db.get_last_ext_temp(),
                                                   round(summ2 / nbofelt, 2),
                                                   "C"))
@@ -81,11 +84,13 @@ class ApiHandler(tornado.web.RequestHandler):
                         summ1 = summ1 + elt[1]
                         summ2 = summ2 + elt[2]
                         nbofelt = nbofelt + 1
-                    objs.append(self.build_object("Inside Pressure",
+                    objs.append(self.build_object("pressure_in",
+                                                  "Inside Pressure",
                                                   round(db.get_last_pressure()/1000, 2),
                                                   round((summ1 / nbofelt)/1000, 2),
                                                   "kPa"))
-                    objs.append(self.build_object("Outside Pressure",
+                    objs.append(self.build_object("pressure_out", 
+                                                  "Outside Pressure",
                                                   round(db.get_last_pressure()/1000, 2),
                                                   round((summ2 / nbofelt)/1000, 2),
                                                   "kPa"))
@@ -95,7 +100,8 @@ class ApiHandler(tornado.web.RequestHandler):
                     for elt in db.hash_data_last_hours(time):
                         summ1 = summ1 + elt[1]
                         nbofelt = nbofelt + 1
-                    objs.append(self.build_object("Hash Rate",
+                    objs.append(self.build_object("hash_rate", 
+                                                  "Hash Rate",
                                                   db.get_last_hashrate(),
                                                   round(summ1 / nbofelt, 2),
                                                   "GH/s"))
@@ -104,7 +110,8 @@ class ApiHandler(tornado.web.RequestHandler):
                     for elt in db.error_data_last_hours(time):
                         summ1 = summ1 + elt[1]
                         nbofelt = nbofelt + 1
-                    objs.append(self.build_object("Error Rate",
+                    objs.append(self.build_object("error_rate", 
+                                                  "Error Rate",
                                                   round(db.get_last_errorrate(), 2),
                                                   round(summ1 / nbofelt, 2),
                                                   "%"))
@@ -115,11 +122,13 @@ class ApiHandler(tornado.web.RequestHandler):
                         summ1 = summ1 + elt[1]
                         summ2 = summ2 + elt[2]
                         nbofelt = nbofelt + 1
-                    objs.append(self.build_object("Asic1 Temp",
+                    objs.append(self.build_object("asic1_temp", 
+                                                  "Asic1 Temp",
                                                   db.get_last_asic1_temp(),
                                                   round(summ1 / nbofelt, 2),
                                                   "C"))
-                    objs.append(self.build_object("Asic2 Temp",
+                    objs.append(self.build_object("asic2_temp", 
+                                                  "Asic2 Temp",
                                                   db.get_last_asic2_temp(),
                                                   round(summ2 / nbofelt, 2),
                                                   "C"))
@@ -166,6 +175,18 @@ class ApiHandler(tornado.web.RequestHandler):
                 action_name = str(self.get_argument("name", None))
                 method = getattr(actions(), action_name)
                 data["msg"] = method()
+            elif datatype == "data":
+                key = str(self.get_argument("name", None))
+                array = []
+                if key in ("temp_out", "temp_in", "pressure_in", "pressure_out"):
+                    with DBAccess('temppressure.db') as db:
+                        for elt in getattr(db, 'get_' + key + '_data')():
+                            array.append(elt)
+                if key in ("hash_rate", "error_rate", "asic1_temp", "asic2_temp"):
+                    with DBAccess('miner.db') as db:
+                        for elt in getattr(db, 'get_' + key + '_data')():
+                            array.append(elt)
+                data["data"] = array
                 
         else:
             raise tornado.web.HTTPError(403, "Wrong password and/or username.")
