@@ -1,4 +1,4 @@
-import nmap
+#import nmap
 import struct
 import socket
 import tornado.httpclient
@@ -60,7 +60,7 @@ class netstatus():
         except Exception as e:
             # Other errors are possible, such as IOError.
             http_client.close()
-            print "Error: " + str(e)
+            print("Error: " + str(e))
 
 
 

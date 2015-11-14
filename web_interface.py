@@ -6,8 +6,9 @@ import ssl
 import sqlite3
 from datetime import datetime
 from dbaccess import DBAccess
-from netstatus import netstatus
+#from netstatus import netstatus
 from actions import actions
+from btcoin import btcoin
 
 import cgmclt
 
@@ -46,7 +47,7 @@ class ApiHandler(tornado.web.RequestHandler):
         return obj
     
     def get(self):
-        print repr(self.request)
+        print(repr(self.request))
         data = dict()
         temp24 = []
         pressure24 = []
@@ -132,6 +133,15 @@ class ApiHandler(tornado.web.RequestHandler):
                                                   db.get_last_asic2_temp(),
                                                   round(summ2 / nbofelt, 2),
                                                   "C"))
+                bt = btcoin("http://eclipsemc.com/api.php", "533943365f90f2311df3904bcdbc6c")
+                userstat = bt.get_user_stat()
+                reward = float(userstat["data"]["user"]["confirmed_rewards"])
+                objs.append(self.build_object("reward",
+                                              "Pending Reward",
+                                              round(reward, 4),
+                                              None,
+                                              "BTC"))
+                                              
                 data["data"] = objs
             if datatype == "weather":
                 with DBAccess('temppressure.db') as db:
@@ -163,12 +173,12 @@ class ApiHandler(tornado.web.RequestHandler):
                     for elt in db.asic_temp_data_last_hours(time):
                         asic_temp.append(elt)
                     data["asic_temp"] = asic_temp
-            elif datatype == "network":
-                ns = netstatus()
-                netlist = []
-                for ip, name in ns.get_connected_devices():
-                    netlist.append({"ip": ip, "name": name})
-                data["network"] = netlist
+            #elif datatype == "network":
+            #    ns = netstatus()
+            #    netlist = []
+            #    for ip, name in ns.get_connected_devices():
+            #        netlist.append({"ip": ip, "name": name})
+            #    data["network"] = netlist
             elif datatype == "list_actions":
                 data["data"] = actions().list_actions()
             elif datatype == "send_action":

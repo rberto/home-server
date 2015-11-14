@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from  netstatus import netstatus
 import inspect
 
@@ -32,7 +33,7 @@ class actions():
         Resutl will not contain this method.
         """
         actionlist = []
-        for method_tuple in inspect.getmembers(actions, predicate=inspect.ismethod):
+        for method_tuple in inspect.getmembers(self, predicate=inspect.ismethod):
             if method_tuple[0] != "list_actions":
                 doc = inspect.getdoc(getattr(actions, method_tuple[0]))
                 result = dict()
@@ -42,4 +43,4 @@ class actions():
         return actionlist
 
 if __name__ == "__main__":
-    print actions().list_actions()
+    print(actions().list_actions())
