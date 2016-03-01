@@ -101,21 +101,23 @@ class ApiHandler(tornado.web.RequestHandler):
                     for elt in db.hash_data_last_hours(time):
                         summ1 = summ1 + elt[1]
                         nbofelt = nbofelt + 1
-                    objs.append(self.build_object("hash_rate", 
-                                                  "Hash Rate",
-                                                  db.get_last_hashrate(),
-                                                  round(summ1 / nbofelt, 2),
-                                                  "GH/s"))
+                    if nbofelt > 0:
+                        objs.append(self.build_object("hash_rate", 
+                                                      "Hash Rate",
+                                                      db.get_last_hashrate(),
+                                                      round(summ1 / nbofelt, 2),
+                                                      "GH/s"))
                     summ1 = 0 
                     nbofelt = 0
                     for elt in db.error_data_last_hours(time):
                         summ1 = summ1 + elt[1]
                         nbofelt = nbofelt + 1
-                    objs.append(self.build_object("error_rate", 
-                                                  "Error Rate",
-                                                  round(db.get_last_errorrate(), 2),
-                                                  round(summ1 / nbofelt, 2),
-                                                  "%"))
+                    if nbofelt > 0:
+                        objs.append(self.build_object("error_rate", 
+                                                      "Error Rate",
+                                                      round(db.get_last_errorrate(), 2),
+                                                      round(summ1 / nbofelt, 2),
+                                                      "%"))
                     summ1 = 0 
                     summ2 = 0
                     nbofelt = 0
@@ -123,16 +125,17 @@ class ApiHandler(tornado.web.RequestHandler):
                         summ1 = summ1 + elt[1]
                         summ2 = summ2 + elt[2]
                         nbofelt = nbofelt + 1
-                    objs.append(self.build_object("asic1_temp", 
-                                                  "Asic1 Temp",
-                                                  db.get_last_asic1_temp(),
-                                                  round(summ1 / nbofelt, 2),
-                                                  "C"))
-                    objs.append(self.build_object("asic2_temp", 
-                                                  "Asic2 Temp",
-                                                  db.get_last_asic2_temp(),
-                                                  round(summ2 / nbofelt, 2),
-                                                  "C"))
+                    if nbofelt > 0:
+                        objs.append(self.build_object("asic1_temp", 
+                                                      "Asic1 Temp",
+                                                      db.get_last_asic1_temp(),
+                                                      round(summ1 / nbofelt, 2),
+                                                      "C"))
+                        objs.append(self.build_object("asic2_temp", 
+                                                      "Asic2 Temp",
+                                                      db.get_last_asic2_temp(),
+                                                      round(summ2 / nbofelt, 2),
+                                                      "C"))
                 bt = btcoin("http://eclipsemc.com/api.php", "533943365f90f2311df3904bcdbc6c")
                 userstat = bt.get_user_stat()
                 reward = float(userstat["data"]["user"]["confirmed_rewards"])
