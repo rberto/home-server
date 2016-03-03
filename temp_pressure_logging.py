@@ -2,7 +2,7 @@ import time
 import os
 import argparse
 import sqlite3
-import pywapi
+import pyowm
 from BMP085 import Bmp085
 from datetime import datetime
 
@@ -21,7 +21,7 @@ pressures = []
 start_time = time.time()
 
 if args.debug:
-    print "Initialize sensor on I2C address: %s" % SENSOR_ADDRESS
+    print("Initialize sensor on I2C address: %s" % SENSOR_ADDRESS)
 bmp085 = Bmp085(SENSOR_ADDRESS, 0)
 
 while time.time() - start_time < args.period:
@@ -31,13 +31,23 @@ while time.time() - start_time < args.period:
     temps.append(temp)
     pressures.append(p)
     if args.debug:
-        print "Temp=%s, Pressure=%s"%(temp, p)
+        print("Temp=%s, Pressure=%s"%(temp, p))
     # Wait for the set time between intervals.
     time.sleep(args.interval)
 
-d = pywapi.get_weather_from_weather_com(STATION, "metric")
-ext_temp = float(d["current_conditions"]["temperature"])
-ext_pressure = float(d["current_conditions"]["barometer"]["reading"])
+owm = pyowm.OWM('0bb35d44e01c168892fc66f9e70914f4')
+observation = owm.weather_at_place("Toulouse,fr")
+w = observation.get_weather()
+ext_temp = w.get_temperature('celsius')["temp"]
+ext_pressure = w.get_pressure()["press"]
+
+if args.debug:
+    print(ext_temp)
+    print(ext_pressure)
+    
+#d = pywapi.get_weather_from_weather_com(STATION, "metric")
+#ext_temp = float(d["current_conditions"]["temperature"])
+#ext_pressure = float(d["current_conditions"]["barometer"]["reading"])
 
 
 key = time.time()
@@ -48,7 +58,7 @@ values.append(round(sum(pressures)/len(pressures), 2))
 values.append(round(ext_temp, 2))
 values.append(round(ext_pressure*100, 2))
 if args.debug:
-    print "Storing these values in database: %s" %values
+    print("Storing these values in database: %s" %values)
 # Convert list to list of str.
 values = ["%s" % x for x in values]
 # Connect to database.
