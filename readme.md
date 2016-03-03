@@ -4,7 +4,7 @@ Logger
 Usage
 -----
 
-'python temp_pressure_logging -i 30 -p 540'
+`python temp_pressure_logging -i 30 -p 540`
 
 Will average inside temp and pressure read every 30s over 540s.
 Will log the interior and exterior temp and pressure in a predifined db
