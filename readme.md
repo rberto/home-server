@@ -42,9 +42,9 @@ Usage
 Install
 -------
 
-tornado:
+tornado
 	pip-3.2 install tornado
-request:
+request
 	pip-3.2 install requests
-nmap for python:
+nmap for python
 	pip-3.2 install python-nmap
