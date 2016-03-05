@@ -212,22 +212,13 @@ class WebInterface():
             template_path = os.path.join(os.path.dirname(__file__), "www"),
             autoescape=None)
 
-        api_app = tornado.web.Application(handlers = [(r"/", ApiHandler)], autoescapse=None)
-
-        context = {"certfile": os.path.join(os.path.dirname(__file__), "keys", "server.crt"),
-                   "keyfile": os.path.join(os.path.dirname(__file__), "keys", "server.key"), 
-                   "ssl_version": ssl.PROTOCOL_SSLv23}
-
         ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         ssl_ctx.load_cert_chain(os.path.join(os.path.dirname(__file__), "keys", "server_new.pem"),
                                 os.path.join(os.path.dirname(__file__), "keys", "server_new.key"))
         
-        api_server = tornado.httpserver.HTTPServer(api_app, ssl_options=context)
         local_server = tornado.httpserver.HTTPServer(local_app, ssl_options=ssl_ctx)
 
-        api_server.listen(API_PORT)
         local_server.listen(WEB_INTERFACE_PORT)
-        ##application.listen(WEB_INTERFACE_PORT)
         tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':

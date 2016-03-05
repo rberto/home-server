@@ -43,8 +43,23 @@ Install
 -------
 
 tornado
+
 	pip-3.2 install tornado
+
+Generating self signed certificate
+
+    openssl req -new -x509 -days 365 -nodes -out server.pem -keyout server.key
+
+Generating keys for clients, which require the bouncyCastleProvider jar.
+
+    keytool -importcert -v -trustcacerts -file "path_to_cert/interm_ca.cer" -alias IntermediateCA -keystore "res/raw/myKeystore.bks" -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath "path_to_bouncycastle/bcprov-jdk16-145.jar" -storetype BKS -storepass mysecret
+
 request
+
 	pip-3.2 install requests
+
 nmap for python
+
 	pip-3.2 install python-nmap
+
+
