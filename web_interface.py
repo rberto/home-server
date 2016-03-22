@@ -4,6 +4,7 @@ import tornado.web
 import tornado.httpserver
 import ssl
 import sqlite3
+import picamera
 from datetime import datetime
 from dbaccess import DBAccess
 #from netstatus import netstatus
@@ -20,6 +21,8 @@ PASSWORD = "azerty"
 class ImageHandler(tornado.web.RequestHandler):
 
     def get(self):
+        with picamera.PiCamera() as camera:
+            camera.capture(os.path.join(os.path.dirname(__file__), "www", "img.png"))
         header = "image/png"
         ifile = open(os.path.join(os.path.dirname(__file__), "www", "img.png"), "rb")
         self.add_header("Content-Type", header)
