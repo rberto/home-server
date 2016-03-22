@@ -17,6 +17,14 @@ API_PORT = 8899
 USER = "romain"
 PASSWORD = "azerty"
 
+class ImageHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        header = "image/png"
+        ifile = open(os.path.join(os.path.dirname(__file__), "www", "img.png", "r")
+        self.add_header("Content-Type", header)
+        self.write(ifile.read())
+
 class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -208,7 +216,7 @@ class ApiHandler(tornado.web.RequestHandler):
 class WebInterface():
     def start(self):
         local_app = tornado.web.Application(
-            handlers = [(r"/", MainHandler), (r"/api", ApiHandler)],
+            handlers = [(r"/", MainHandler), (r"/api", ApiHandler), {r"/img", ImageHandler}],
             template_path = os.path.join(os.path.dirname(__file__), "www"),
             autoescape=None)
 
