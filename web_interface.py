@@ -18,16 +18,6 @@ API_PORT = 8899
 USER = "romain"
 PASSWORD = "azerty"
 
-class ImageHandler(tornado.web.RequestHandler):
-
-    def get(self):
-        with picamera.PiCamera() as camera:
-            camera.capture(os.path.join(os.path.dirname(__file__), "www", "img.png"))
-        header = "image/png"
-        ifile = open(os.path.join(os.path.dirname(__file__), "www", "img.png"), "rb")
-        self.add_header("Content-Type", header)
-        self.write(ifile.read())
-
 class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -211,6 +201,14 @@ class ApiHandler(tornado.web.RequestHandler):
                         for elt in getattr(db, 'get_' + key + '_data')():
                             array.append(elt)
                 data["data"] = array
+            elif datatype == "img":
+                with picamera.PiCamera() as camera:
+                    camera.capture(os.path.join(os.path.dirname(__file__), "www", "img.png"))
+                    header = "image/png"
+                    ifile = open(os.path.join(os.path.dirname(__file__), "www", "img.png"), "rb")
+                    self.add_header("Content-Type", header)
+                    self.write(ifile.read())
+                    return 
                 
         else:
             raise tornado.web.HTTPError(403, "Wrong password and/or username.")
@@ -219,7 +217,7 @@ class ApiHandler(tornado.web.RequestHandler):
 class WebInterface():
     def start(self):
         local_app = tornado.web.Application(
-            handlers = [(r"/", MainHandler), (r"/api", ApiHandler), (r"/img", ImageHandler)],
+            handlers = [(r"/", MainHandler), (r"/api", ApiHandler)],
             template_path = os.path.join(os.path.dirname(__file__), "www"),
             autoescape=None)
 
