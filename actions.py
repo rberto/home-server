@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 from  netstatus import netstatus
 import inspect
+import requests
+import registerHandler as reg
 
 """
 Declare here all action a user can call.
@@ -25,6 +27,20 @@ class actions():
             netstatus().shutdown(ip)
             ips = ips + str(ip) + ";"
         return ips
+
+    def lights_on(self):
+        """ Turns the living room light on"""
+        slave = reg.getIp("livingRoomCeiling")
+        url = "http://" + slave
+        print(url)
+        r = requests.post(url, data={'light': 1})
+        return r.text
+
+    def lights_off(self):
+        """ Turns the living room light off"""
+        slave = reg.getIp("livingRoomCeiling")
+        r = requests.post("http://" + slave, data={'light': 0})
+        return r.text
         
 
     def list_actions(self):

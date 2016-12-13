@@ -7,9 +7,11 @@ import sqlite3
 import picamera
 from datetime import datetime
 from dbaccess import DBAccess
+from requestHandlerPage import RequestHandler
 #from netstatus import netstatus
 from actions import actions
 from btcoin import btcoin
+from kodi import KodiNotifListener
 
 import cgmclt
 
@@ -137,14 +139,14 @@ class ApiHandler(tornado.web.RequestHandler):
                                                       db.get_last_asic2_temp(),
                                                       round(summ2 / nbofelt, 2),
                                                       "C"))
-                bt = btcoin("http://eclipsemc.com/api.php", "533943365f90f2311df3904bcdbc6c")
-                userstat = bt.get_user_stat()
-                reward = float(userstat["data"]["user"]["confirmed_rewards"])
-                objs.append(self.build_object("reward",
-                                              "Pending Reward",
-                                              round(reward, 4),
-                                              None,
-                                              "BTC"))
+                #bt = btcoin("http://eclipsemc.com/api.php", "533943365f90f2311df3904bcdbc6c")
+                #userstat = bt.get_user_stat()
+                #reward = float(userstat["data"]["user"]["confirmed_rewards"])
+                #objs.append(self.build_object("reward",
+                #                              "Pending Reward",
+                #                              round(reward, 4),
+                #                              None,
+                #                              "BTC"))
                                               
                 data["data"] = objs
             if datatype == "weather":
@@ -213,11 +215,13 @@ class ApiHandler(tornado.web.RequestHandler):
         else:
             raise tornado.web.HTTPError(403, "Wrong password and/or username.")
         self.write(data)
+    
 
 class WebInterface():
+    
     def start(self):
         local_app = tornado.web.Application(
-            handlers = [(r"/", MainHandler), (r"/api", ApiHandler)],
+            handlers = [(r"/", MainHandler), (r"/api", ApiHandler), (r"/register", RequestHandler)],
             template_path = os.path.join(os.path.dirname(__file__), "www"),
             autoescape=None)
 
@@ -232,6 +236,11 @@ class WebInterface():
 
 if __name__ == '__main__':
     try:
+        kodi = KodiNotifListener()
+        a = actions()
+        kodi.add_callback("Player.OnPlay", a.lights_off)
+        kodi.add_callback("Player.OnStop", a.lights_on)
+        kodi.start()
         web = WebInterface()
         web.start()
     except:

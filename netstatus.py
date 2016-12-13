@@ -1,4 +1,4 @@
-#import nmap
+import nmap
 import struct
 import socket
 import tornado.httpclient
@@ -65,4 +65,8 @@ class netstatus():
 
 
 if __name__ == "__main__":
-    netstatus().find_listening_devices(8886)
+    #netstatus().find_listening_devices(8886)
+    nm = nmap.PortScanner()
+    nm.scan(hosts='192.168.1.0/24', arguments='-sn')
+    for x in nm.all_hosts():
+        print(nm[x])

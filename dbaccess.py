@@ -33,6 +33,19 @@ class DBAccess():
     def __disconnect(self):
         self.dbconnection.commit()
         self.dbconnection.close()
+
+    def registerObject(self, name, ip):
+        #object_list[name] = ip
+        #dbconnection = sqlite3.connect('/home/pi/db/temppressure.db')
+        #cursor = dbconnection.cursor()
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS clients (name text primary key, ip text, time int)")
+        # Insert data into database.
+        self.cursor.execute("UPDATE clients "
+                            "SET name=:who, ip=:ip, time=:time "
+                            "WHERE name=:who;", {"who": name, "ip": ip, "time": time.time()})
+        self.cursor.execute("INSERT INTO clients (name, ip, time) "
+                            "SELECT :who, :ip, :time "
+                            "WHERE (Select Changes() = 0);", {"who": name, "ip": ip, "time": time.time()})
         
     def get_temp_in_data(self, hrs=24):
         limit = str(int(time.time() - hrs*60*60))        
