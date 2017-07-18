@@ -5,6 +5,7 @@ import tornado.httpserver
 import ssl
 import sqlite3
 import picamera
+import registerHandler
 from datetime import datetime
 from dbaccess import DBAccess
 from requestHandlerPage import RequestHandler
@@ -12,6 +13,8 @@ from requestHandlerPage import RequestHandler
 from actions import actions
 from btcoin import btcoin
 from kodi import KodiNotifListener
+import registerHandler as reg
+import requests
 
 import cgmclt
 
@@ -48,6 +51,20 @@ class ApiHandler(tornado.web.RequestHandler):
         obj["avg"] = avg
         obj["unit"] = unit
         return obj
+
+    def buid_light_status_object(self):
+        """
+        Gets the current status of the living room lights and returns
+        the object ready to be returned to client
+        """
+        lightip = reg.getIp("livingRoomCeiling")
+        lightstatus = requests.get("http://" + lightip + "/status").text
+        return self.build_object("light_status", 
+                                 "Light Status",
+                                 lightstatus.upper(),
+                                 None,
+                                 "")
+        
     
     def get(self):
         print(repr(self.request))
@@ -147,7 +164,7 @@ class ApiHandler(tornado.web.RequestHandler):
                 #                              round(reward, 4),
                 #                              None,
                 #                              "BTC"))
-                                              
+                objs.append(self.buid_light_status_object())
                 data["data"] = objs
             if datatype == "weather":
                 with DBAccess('temppressure.db') as db:
