@@ -2,6 +2,8 @@ import nmap
 import struct
 import socket
 import tornado.httpclient
+from scapy.all import *
+import time
 
 class netstatus():
 
@@ -23,6 +25,22 @@ class netstatus():
         nm.scan(hosts='192.168.1.0/24', arguments='-sn')
         for x in nm.all_hosts():
             yield (x, nm[x]['hostname'])
+
+    def get_hdw_and_ip(self):
+        alive,dead=srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.0.0/24"), timeout=2, verbose=0)
+        for i in range(0,len(alive)):
+            yield (alive[i][1].hwsrc, alive[i][1].psrc)
+
+    def is_hdw_on_network(self, adr):
+        for hdw_adr, ip in self.get_hdw_and_ip():
+            if hdw_adr == adr:
+                return True, ip
+        return False, None
+
+    def ping_addr(self, ip):
+        import os
+        response = os.system("ping -c 1 -w2 " + ip + " > /dev/null 2>&1")
+        return response == 0
 
     def wake_on_lan(self, macaddress):
         """ Switches on remote computers using WOL. """
@@ -66,7 +84,11 @@ class netstatus():
 
 if __name__ == "__main__":
     #netstatus().find_listening_devices(8886)
-    nm = nmap.PortScanner()
-    nm.scan(hosts='192.168.1.0/24', arguments='-sn')
-    for x in nm.all_hosts():
-        print(nm[x])
+    #nm = nmap.PortScanner()
+    #nm.scan(hosts='192.168.1.0/24', arguments='-sn')
+    #for x in nm.all_hosts():
+    #    print(nm[x])
+    nm = netstatus()
+    while True:
+        print(nm.is_hdw_on_network("78:02:f8:35:78:d9"))
+        time.sleep(2)

@@ -63,3 +63,19 @@ nmap for python
 	pip-3.2 install python-nmap
 
 
+AutoLights
+==========
+
+Usage
+-----
+
+sudo pyhton3 autolights.py
+
+will check every 15 seconds if the phone just connected or disconnect. And act on the lights accordingly.
+
+Install
+-------
+
+scapy
+
+	pip3 install scapy-python3

@@ -30,8 +30,9 @@ def readClientList():
     return result
 
 if __name__ == '__main__':
-    registerObject("test", "127.0.0.1")
-    print(getIp("test"))
-    registerObject("test", "127.0.0.2")
-    print(getIp("test"))
+    #registerObject("test", "127.0.0.1")
+    #print(getIp("test"))
+    #registerObject("test", "127.0.0.2")
+    #print(getIp("test"))
+    print(readClientList())
         
