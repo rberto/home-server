@@ -41,7 +41,22 @@ class actions():
         slave = reg.getIp("livingRoomCeiling")
         r = requests.post("http://" + slave, data={'light': 0})
         return r.text
+
+    def room_on(self):
+        """ Turns the bedroom lights on"""
+        r = requests.post("http://192.168.0.105", data={'color': "ffffff"})
+        return r.text
+
+    def room_off(self):
+        """Turns the bedroom lights off"""
+        r = requests.post("http://192.168.0.105", data={'color': 0})
+        return r.text
         
+
+    def room_dim(self):
+        """Turns the bedroom lights dim"""
+        r = requests.post("http://192.168.0.105", data={'color': "7F7F7F"})
+        return r.text
 
     def list_actions(self):
         """ 
