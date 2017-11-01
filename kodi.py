@@ -35,7 +35,7 @@ class KodiNotifListener:
             s = socket.socket()            
             print("connecting...")
             try:
-                s.connect(("192.168.0.102", 9090))
+                s.connect(("192.168.0.100", 9090))
             except socket.error:
                 time.sleep(10)
                 continue
