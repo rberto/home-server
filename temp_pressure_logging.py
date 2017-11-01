@@ -2,7 +2,7 @@ import time
 import os
 import argparse
 import sqlite3
-import pyowm
+from oweatherm import ToulouseWeather
 from BMP085 import Bmp085
 from datetime import datetime
 
@@ -35,11 +35,8 @@ while time.time() - start_time < args.period:
     # Wait for the set time between intervals.
     time.sleep(args.interval)
 
-owm = pyowm.OWM('0bb35d44e01c168892fc66f9e70914f4')
-observation = owm.weather_at_place("Toulouse,fr")
-w = observation.get_weather()
-ext_temp = w.get_temperature('celsius')["temp"]
-ext_pressure = w.get_pressure()["press"]
+tw = ToulouseWeather()
+ext_temp ,ext_pressure = tw.get_current_temp_and_pressure()
 
 if args.debug:
     print(ext_temp)
